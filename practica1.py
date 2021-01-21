@@ -377,7 +377,24 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	data = [State_1, State_2, State_3, State_4, State_5, State_6]
 	re_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
-	return re_df
+
+	W_t = (h1re - h2re) + (h3re - h4re)
+	Q_cald = h1re - h6re + (h3re - h2re)
+	W_p = (h6re - h5re)
+	Q_cond = h4re - h5re 
+	eta = abs((W_t - W_p)*100/Q_cald) #Overheated efficiency
+	mass_flux = abs(W_cycle/(W_t-W_p))
+	bwr = W_p / W_t *100
+	W_t *= mass_flux/1000 #[MW]
+	W_p *= mass_flux/1000 #[MW]
+	Q_cald *= mass_flux/1000 #[MW]
+	Q_cond *= mass_flux/1000 #[MW]
+	EnergyParams = [W_t, Q_cald, W_p, Q_cond, bwr, eta, mass_flux]
+	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_cald [MW]', 'W_p [MW]', 'Q_cond [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+
+
+
+	return re_df, EnergyParams
 
 print(reheat_Rankine())
 
