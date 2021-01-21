@@ -335,21 +335,23 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	State_1 = np.array([t1re, p1re, h1re, s1re, x1])
 	#State 2
 	s2re_id = s1re
-	x2 = fluid.T_s(s=s2re_id, p=p2re, quality=True)[1]
-	h2re_id = fluid.h(p=p2re, x=x2)
+	t2re_id, x2 = fluid.T_s(s=s2re_id, p=p2re, quality=True)
+	h2re_id = fluid.h(p=p2re, T=t2re_id, x=x2)
+
 	h2re = h1re - (eta_t_re1*(h1re-h2re_id))
-	t2re = fluid.T_h(h=h2re, p=p2re)
-	s2re = fluid.s(p=p2re, x=x2)
+	t2re, x2 = fluid.T_h(h=h2re, p=p2re, quality=True)
+	s2re = fluid.s(T=t2re, p=p2re, x=x2)
 	State_2 = np.array([t2re, p2re, h2re, s2re, x2])
 	#State 3
 	s3re = fluid.s(p=p3re, T=t3re)
 	h3re = fluid.h(p=p3re, T=t3re)
 	x3 = fluid.T_s(s=s3re, p=p3re, quality=True)[1]
 	State_3 = np.array([t3re, p3re, h3re, s3re, x3])
-	#State 4 A PARTIR DE AQUÍ HAY QUE REVISAAAARRRRRRRR
+	#State 4 
 	s4re_id = s3re
 	t4re_id, x4 = fluid.T_s(s=s4re_id, p=p4re, quality=True)
-	h4re_id = fluid.h(p=p4re, T=t4re_id)
+	h4re_id = fluid.h(p=p4re, T=t4re_id, x=x4)
+
 	h4re = h3re-(eta_t_re2*(h3re-h4re_id))
 	t4re, x4 = fluid.T_h(h=h4re, p=p4re, quality=True)
 	s4re = fluid.s(T=t4re, p=p4re, x=x4)
@@ -366,10 +368,12 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	p6re = p1re
 	T6re_id, x6_id = fluid.T_s(s=s6re_id, p=p6re, quality=True)
 	h6re_id = fluid.h(p=p6re, T=T6re_id, x=x6_id)
+
 	h6re = h5re + (h6re_id-h5re)/eta_p
 	t6re, x6 = fluid.T_h(h=h6re, p=p6re, quality=True)
 	s6re = fluid.h(T=t6re, p=p6re, x=x6)
 	State_6 = np.array([t6re, p6re, h6re, s6re, x6])
+
 	data = [State_1, State_2, State_3, State_4, State_5, State_6]
 	re_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
