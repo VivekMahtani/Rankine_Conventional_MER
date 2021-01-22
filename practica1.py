@@ -216,51 +216,52 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	EnergyParams_real = pd.DataFrame(data=EnergyParams_real, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
 
     ###############PLOTTING THE CYCLES########################
-	water_curve() #With this function I create a figure with the water curve
-	## 1--> 2real
-	T = np.array([t1, t2real])
-	S = np.array([s1, s2real])
-	plt.plot(S,T, '--ko', alpha=1, label='Real')
-	## 1-->2
-	T = np.array([t1, t2])
-	S = np.array([s1, s2])
-	plt.plot(S,T, '--go', alpha=1, label='Ideal')
-	## 2-->3
-	T = np.array([t2, t3])
-	S = np.array([s2, s3])
-	plt.plot(S,T, '--go', alpha=1)
-	## 2real-->3
-	T = np.array([t2real, t3])
-	S = np.array([s2real, s3])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 3--> 4
-	T = np.array([t3, t4])
-	S = np.array([s3, s4])
-	plt.plot(S,T, '--go', alpha=1)
-	## 3--> 4real
-	T = np.array([t3, t4real])
-	S = np.array([s3, s4real])
-	plt.plot(S,T, '--ko', alpha=1)
-	##4-->1
-	H2O = pm.get('mp.H2O')
-	T = np.linspace(t4, t1,100)
-	p = p4 * np.ones(len(T))
-	S = H2O.s(T=T,p=p)
-	plt.plot(S,T,'--g', alpha=1)
-	##4real-->1
-	H2O = pm.get('mp.H2O')
-	T = np.linspace(t4real, t1,100)
-	p = p4 * np.ones(len(T))
-	S = H2O.s(T=T,p=p)
-	plt.plot(S,T,'--k', alpha=1)
+	# water_curve() #With this function I create a figure with the water curve
+	# ## 1--> 2real
+	# T = np.array([t1, t2real])
+	# S = np.array([s1, s2real])
+	# plt.plot(S,T, '--ko', alpha=1, label='Real')
+	# ## 1-->2
+	# T = np.array([t1, t2])
+	# S = np.array([s1, s2])
+	# plt.plot(S,T, '--go', alpha=1, label='Ideal')
+	# ## 2-->3
+	# T = np.array([t2, t3])
+	# S = np.array([s2, s3])
+	# plt.plot(S,T, '--go', alpha=1)
+	# ## 2real-->3
+	# T = np.array([t2real, t3])
+	# S = np.array([s2real, s3])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ## 3--> 4
+	# T = np.array([t3, t4])
+	# S = np.array([s3, s4])
+	# plt.plot(S,T, '--go', alpha=1)
+	# ## 3--> 4real
+	# T = np.array([t3, t4real])
+	# S = np.array([s3, s4real])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ##4-->1
+	# H2O = pm.get('mp.H2O')
+	# T = np.linspace(t4, t1,100)
+	# p = p4 * np.ones(len(T))
+	# S = H2O.s(T=T,p=p)
+	# plt.plot(S,T,'--g', alpha=1)
+	# ##4real-->1
+	# H2O = pm.get('mp.H2O')
+	# T = np.linspace(t4real, t1,100)
+	# p = p4 * np.ones(len(T))
+	# S = H2O.s(T=T,p=p)
+	# plt.plot(S,T,'--k', alpha=1)
 
-	plt.title('Rankine cycle')
-	plt.xlabel('Entropy s [kJ/(kg K)]')
-	plt.ylabel('Temperature T [K]')
-	plt.legend(loc=0)
+	# plt.title('Rankine cycle')
+	# plt.xlabel('Entropy s [kJ/(kg K)]')
+	# plt.ylabel('Temperature T [K]')
+	# plt.legend(loc=0)
 	#plt.savefig('RankineCycle.png')
 	#plt.show()
-	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real
+	title = 'Rankine cycle'
+	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real, title
 
 #print(Rankine_cycle())
 
@@ -352,56 +353,57 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	EnergyParams_real = [W_t_oh, Q_out_oh, W_p_oh, Q_in_oh, bwr, eta_oh, mass_flux]
 	EnergyParams_real = pd.DataFrame(data=EnergyParams_real, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
     ###############PLOTTING THE REAL CYCLE########################
-	water_curve()
-	#1 --> 1'
-	T = np.array([t1, t1_oh])
-	S = np.array([s1, s1_oh])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 1'--> 2
-	T = np.array([t1_oh, t2_oh])
-	S = np.array([s1_oh, s2_oh])
-	plt.plot(S,T, '--ko', alpha=1, label='Real')
-	## 1'--> 2 ideal
-	T = np.array([t1_oh, t2_oh_id])
-	S = np.array([s1_oh, s2_oh_id])
-	plt.plot(S,T, '--go', alpha=1, label='Ideal')
-	## 2-->3
-	T = np.array([t2_oh, t3_oh])
-	S = np.array([s2_oh, s3_oh])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 2ideal -->3
-	T = np.array([t2_oh_id, t3_oh])
-	S = np.array([s2_oh_id, s3_oh])
-	plt.plot(S,T, '--go', alpha=1)
-	## 3--> 4
-	T = np.array([t3_oh, t4_oh])
-	S = np.array([s3_oh, s4_oh])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 3--> 4ideal
-	T = np.array([t3_oh, t4_oh_id])
-	S = np.array([s3_oh, s4_oh_id])
-	plt.plot(S,T, '--go', alpha=1)
-	##4-->1
-	H2O = pm.get('mp.H2O')
-	T = np.linspace(t4_oh, t1_oh,100)
-	p = p4 * np.ones(len(T))
-	S = H2O.s(T=T,p=p)
-	plt.plot(S,T,'--k', alpha=1)
-	##4ideal -->1
-	H2O = pm.get('mp.H2O')
-	T = np.linspace(t4_oh_id, t1_oh,100)
-	p = p4 * np.ones(len(T))
-	S = H2O.s(T=T,p=p)
-	plt.plot(S,T,'--g', alpha=1)
+	# water_curve()
+	# #1 --> 1'
+	# T = np.array([t1, t1_oh])
+	# S = np.array([s1, s1_oh])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ## 1'--> 2
+	# T = np.array([t1_oh, t2_oh])
+	# S = np.array([s1_oh, s2_oh])
+	# plt.plot(S,T, '--ko', alpha=1, label='Real')
+	# ## 1'--> 2 ideal
+	# T = np.array([t1_oh, t2_oh_id])
+	# S = np.array([s1_oh, s2_oh_id])
+	# plt.plot(S,T, '--go', alpha=1, label='Ideal')
+	# ## 2-->3
+	# T = np.array([t2_oh, t3_oh])
+	# S = np.array([s2_oh, s3_oh])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ## 2ideal -->3
+	# T = np.array([t2_oh_id, t3_oh])
+	# S = np.array([s2_oh_id, s3_oh])
+	# plt.plot(S,T, '--go', alpha=1)
+	# ## 3--> 4
+	# T = np.array([t3_oh, t4_oh])
+	# S = np.array([s3_oh, s4_oh])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ## 3--> 4ideal
+	# T = np.array([t3_oh, t4_oh_id])
+	# S = np.array([s3_oh, s4_oh_id])
+	# plt.plot(S,T, '--go', alpha=1)
+	# ##4-->1
+	# H2O = pm.get('mp.H2O')
+	# T = np.linspace(t4_oh, t1_oh,100)
+	# p = p4 * np.ones(len(T))
+	# S = H2O.s(T=T,p=p)
+	# plt.plot(S,T,'--k', alpha=1)
+	# ##4ideal -->1
+	# H2O = pm.get('mp.H2O')
+	# T = np.linspace(t4_oh_id, t1_oh,100)
+	# p = p4 * np.ones(len(T))
+	# S = H2O.s(T=T,p=p)
+	# plt.plot(S,T,'--g', alpha=1)
 
-	plt.title('Overheated Rankine cycle')
-	plt.xlabel('Entropy s [kJ/(kg K)]')
-	plt.ylabel('Temperature T [K]')
-	plt.legend(loc=0)
+	# plt.title('Overheated Rankine cycle')
+	# plt.xlabel('Entropy s [kJ/(kg K)]')
+	# plt.ylabel('Temperature T [K]')
+	# plt.legend(loc=0)
 
 	#plt.savefig('OverheatedRankineCycle.png')
 	#plt.show()
-	return ideal_oh_df,EnergyParams_ideal, real_oh_df, EnergyParams_real
+	title = 'Overheated Rankine cycle'
+	return ideal_oh_df,EnergyParams_ideal, real_oh_df, EnergyParams_real, title
 
 #print(overheated_Rankine())
 
@@ -511,70 +513,140 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 
 	######Ploting the cycle####### 
 
+	# water_curve()
+	# #1 --> 2 ideal
+	# T = np.array([t1re, t2re_id])
+	# S = np.array([s1re, s2re_id])
+	# plt.plot(S,T, '--go', alpha=1, label='Ideal')
+	# ## 1--> 2
+	# T = np.array([t1re, t2re])
+	# S = np.array([s1re, s2re])
+	# plt.plot(S,T, '--ko', alpha=1, label='Real')
+	# ## 2-->3
+	# T = np.array([t2re, t3re])
+	# S = np.array([s2re, s3re])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ## 2ideal --> 3
+	# T = np.array([t2re_id, t3re])
+	# S = np.array([s2re_id, s3re])
+	# plt.plot(S,T, '--go', alpha=1)
+	# ## 3--> 4
+	# T = np.array([t3re, t4re])
+	# S = np.array([s3re, s4re])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ## 3--> 4ideal
+	# T = np.array([t3re, t4re_id])
+	# S = np.array([s3re, s4re_id])
+	# plt.plot(S,T, '--go', alpha=1)
+	# ## 4 --> 5
+	# T = np.array([t4re, t5re])
+	# S = np.array([s4re, s5re])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ## 4ideal --> 5
+	# T = np.array([t4re_id, t5re])
+	# S = np.array([s4re_id, s5re])
+	# plt.plot(S,T, '--go', alpha=1)
+	# ## 5 --> 6
+	# T = np.array([t5re, t6re])
+	# S = np.array([s5re, s6re])
+	# plt.plot(S,T, '--ko', alpha=1)
+	# ## 5 --> 6ideal
+	# T = np.array([t5re, t6re_id])
+	# S = np.array([s5re, s6re_id])
+	# plt.plot(S,T, '--go', alpha=1)
+
+	# ##6-->1
+	# H2O = pm.get('mp.H2O')
+	# T = np.linspace(t6re, t1re,100)
+	# p = p6re * np.ones(len(T))
+	# S = H2O.s(T=T,p=p)
+	# plt.plot(S,T,'--k', alpha=1)
+	# ##6ideal -->1
+	# H2O = pm.get('mp.H2O')
+	# T = np.linspace(t6re_id, t1re,100)
+	# p = p6re * np.ones(len(T))
+	# S = H2O.s(T=T,p=p)
+	# plt.plot(S,T,'--g', alpha=1)
+
+	# plt.title('Reheated Rankine cycle')
+	# plt.xlabel('Entropy s [kJ/(kg K)]')
+	# plt.ylabel('Temperature T [K]')
+	# plt.legend(loc=0)
+
+	# #plt.savefig('Reheated_Rankine.png')
+	# #plt.show()
+	title = 'Reheated Rankine cycle'
+
+	return reheated_id_df, EnergyParams_id, reheated_df, EnergyParams, title
+
+
+cycles = [Rankine_cycle(), overheated_Rankine(), reheat_Rankine()]
+
+def plot_cycle(cycle):
+
+	id_df = cycle[0]
+	re_df = cycle[2]
+	index = id_df.columns.values
+	T_id = id_df[index[0]]
+	s_id = id_df[index[3]]
+	T_re = re_df[index[0]]
+	s_re = re_df[index[3]]
+	p_id = id_df[index[1]]
+	p_re = re_df[index[1]]
+
+	H2O = pm.get('mp.H2O')
+
+	T_id_last = np.linspace(T_id[-1], T_id[0],100)
+	p_id_last = p_id[-1] * np.ones(len(T_id_last))
+	S_id_last = H2O.s(T=T_id_last,p=p_id_last)
+
+	T_re_last = np.linspace(T_re[-1], T_re[0],100)
+	p_re_last = p_re[-1] * np.ones(len(T_re_last))
+	S_re_last = H2O.s(T=T_re_last,p=p_re_last)
 	water_curve()
-	#1 --> 2 ideal
-	T = np.array([t1re, t2re_id])
-	S = np.array([s1re, s2re_id])
-	plt.plot(S,T, '--go', alpha=1, label='Ideal')
-	## 1--> 2
-	T = np.array([t1re, t2re])
-	S = np.array([s1re, s2re])
-	plt.plot(S,T, '--ko', alpha=1, label='Real')
-	## 2-->3
-	T = np.array([t2re, t3re])
-	S = np.array([s2re, s3re])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 2ideal --> 3
-	T = np.array([t2re_id, t3re])
-	S = np.array([s2re_id, s3re])
-	plt.plot(S,T, '--go', alpha=1)
-	## 3--> 4
-	T = np.array([t3re, t4re])
-	S = np.array([s3re, s4re])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 3--> 4ideal
-	T = np.array([t3re, t4re_id])
-	S = np.array([s3re, s4re_id])
-	plt.plot(S,T, '--go', alpha=1)
-	## 4 --> 5
-	T = np.array([t4re, t5re])
-	S = np.array([s4re, s5re])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 4ideal --> 5
-	T = np.array([t4re_id, t5re])
-	S = np.array([s4re_id, s5re])
-	plt.plot(S,T, '--go', alpha=1)
-	## 5 --> 6
-	T = np.array([t5re, t6re])
-	S = np.array([s5re, s6re])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 5 --> 6ideal
-	T = np.array([t5re, t6re_id])
-	S = np.array([s5re, s6re_id])
-	plt.plot(S,T, '--go', alpha=1)
-
-	##6-->1
-	H2O = pm.get('mp.H2O')
-	T = np.linspace(t6re, t1re,100)
-	p = p6re * np.ones(len(T))
-	S = H2O.s(T=T,p=p)
-	plt.plot(S,T,'--k', alpha=1)
-	##6ideal -->1
-	H2O = pm.get('mp.H2O')
-	T = np.linspace(t6re_id, t1re,100)
-	p = p6re * np.ones(len(T))
-	S = H2O.s(T=T,p=p)
-	plt.plot(S,T,'--g', alpha=1)
-
-	plt.title('Reheated Rankine cycle')
+	plt.plot(S_id_last,T_id_last,'-g')
+	plt.plot(s_id, T_id, '-og', label='Ideal')
+	plt.plot(S_re_last,T_re_last,'-k')
+	plt.plot(s_re, T_re, '-ok', label='Real')
+	plt.legend()
+	plt.title(cycle[-1])
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
-	plt.legend(loc=0)
-	
-	plt.savefig('Reheated_Rankine.png')
 	plt.show()
+	return index
+
+for cycle in cycles:
+	print(plot_cycle(cycle=cycle))
 
 
-	return reheated_id_df, EnergyParams_id, reheated_df, EnergyParams
+'''
 
-print(reheat_Rankine())
+p1re = 10 #MPa
+t1re = 500 +273.15 #K
+W_cycle = 200*1e03 #kW
+p2re = 0.8 #MPa
+t3re = 460 + 273.15 #K
+p3re = 0.8
+p4re = 0.008
+eta_t_re1 = 0.91
+eta_t_re2 = 0.93
+eta_p = 0.88
+
+
+p1re = np.array([5.,10.,15.,20])
+
+
+plt.figure(2)
+for p in p1re:
+	df = reheat_Rankine(fluid=fluid, p1re=p, p2re=p2re, p3re=p3re, x1=x1, t1re=t1re,
+    	p4re=p4re, t3re=t3re, eta_t_re1=eta_t_re1, eta_t_re2=eta_t_re2, eta_p=eta_p,
+    	W_cycle=W_cycle)[2]
+	plt.plot(df['s [kJ/(kg K)]'], df['T [K]'], label=str(p))
+	plt.legend()
+
+plt.show()
+'''
+
+
+
+
