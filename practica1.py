@@ -262,7 +262,7 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	#plt.show()
 	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real
 
-print(Rankine_cycle())
+#print(Rankine_cycle())
 
 
 def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
@@ -398,6 +398,8 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
 	plt.legend(loc=0)
+
+	plt.savefig('OverheatedRankineCycle.png')
 	plt.show()
 	return ideal_oh_df,EnergyParams_ideal, real_oh_df, EnergyParams_real
 
