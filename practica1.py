@@ -399,11 +399,11 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	plt.ylabel('Temperature T [K]')
 	plt.legend(loc=0)
 
-	plt.savefig('OverheatedRankineCycle.png')
-	plt.show()
+	#plt.savefig('OverheatedRankineCycle.png')
+	#plt.show()
 	return ideal_oh_df,EnergyParams_ideal, real_oh_df, EnergyParams_real
 
-print(overheated_Rankine())
+#print(overheated_Rankine())
 
 
 
@@ -428,11 +428,12 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	h1re = fluid.h(p=p1re, T=t1re)
 	s1re = fluid.s(p=p1re, T=t1re)
 	State_1 = np.array([t1re, p1re, h1re, s1re, x1])
-	#State 2
+	#State 2 ideal
 	s2re_id = s1re
-	t2re_id, x2 = fluid.T_s(s=s2re_id, p=p2re, quality=True)
+	t2re_id, x2_id = fluid.T_s(s=s2re_id, p=p2re, quality=True)
 	h2re_id = fluid.h(p=p2re, T=t2re_id, x=x2)
-
+	State_2_id = np.array([t2re_id, p2re, h2re_id, s2re_id, x2_id])
+	#State 2
 	h2re = h1re - (eta_t_re1*(h1re-h2re_id))
 	t2re, x2 = fluid.T_h(h=h2re, p=p2re, quality=True)
 	s2re = fluid.s(T=t2re, p=p2re, x=x2)
@@ -442,11 +443,12 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	h3re = fluid.h(p=p3re, T=t3re)
 	x3 = fluid.T_s(s=s3re, p=p3re, quality=True)[1]
 	State_3 = np.array([t3re, p3re, h3re, s3re, x3])
-	#State 4 
+	#State 4 ideal
 	s4re_id = s3re
-	t4re_id, x4 = fluid.T_s(s=s4re_id, p=p4re, quality=True)
+	t4re_id, x4_id = fluid.T_s(s=s4re_id, p=p4re, quality=True)
 	h4re_id = fluid.h(p=p4re, T=t4re_id, x=x4)
-
+	State_4_id = np.array([t4re_id, p4re, h4re_id, s4re_id, x4_id])
+	#State 4
 	h4re = h3re-(eta_t_re2*(h3re-h4re_id))
 	t4re, x4 = fluid.T_h(h=h4re, p=p4re, quality=True)
 	s4re = fluid.s(T=t4re, p=p4re, x=x4)
@@ -458,26 +460,46 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	s5re = fluid.s(p=p5re, T=t5re, x=x5)
 	h5re = fluid.h(p=p5re, T=t5re, x=x5)
 	State_5 = np.array([t5re, p5re, h5re, s5re, x5])
-	#State 6
+	#State 6 ideal
 	s6re_id = s5re
 	p6re = p1re
-	T6re_id, x6_id = fluid.T_s(s=s6re_id, p=p6re, quality=True)
+	t6re_id, x6_id = fluid.T_s(s=s6re_id, p=p6re, quality=True)
 	h6re_id = fluid.h(p=p6re, T=T6re_id, x=x6_id)
-
+	State_6_id = np.array([t6re_id, p6re, h6re, s6re_id, x6_id])
+	#State 6
 	h6re = h5re + (h6re_id-h5re)/eta_p
 	t6re, x6 = fluid.T_h(h=h6re, p=p6re, quality=True)
 	s6re = fluid.h(T=t6re, p=p6re, x=x6)
 	State_6 = np.array([t6re, p6re, h6re, s6re, x6])
 
+	data_id = [State_1, State_2_id, State_3, State_4_id, State_5, State_6_id]
+	reheated_id_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
+		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
+
+	W_t = (h1re - h2re_id) + (h3re - h4re_id)
+	Q_cald = h1re - h6re_id + (h3re - h2re_id)
+	W_p = (h6re_id - h5re)
+	Q_cond = h4re - h5re 
+	eta = abs((W_t - W_p)*100/Q_cald) 
+	mass_flux = abs(W_cycle/(W_t-W_p))
+	bwr = W_p / W_t *100
+	W_t *= mass_flux/1000 #[MW]
+	W_p *= mass_flux/1000 #[MW]
+	Q_cald *= mass_flux/1000 #[MW]
+	Q_cond *= mass_flux/1000 #[MW]
+	EnergyParams_id = [W_t, Q_cald, W_p, Q_cond, bwr, eta, mass_flux]
+	EnergyParams_id = pd.DataFrame(data=EnergyParams_id, index=['W_t [MW]', 'Q_cald [MW]', 'W_p [MW]', 'Q_cond [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+
+
 	data = [State_1, State_2, State_3, State_4, State_5, State_6]
-	re_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
+	reheated_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 
 	W_t = (h1re - h2re) + (h3re - h4re)
 	Q_cald = h1re - h6re + (h3re - h2re)
 	W_p = (h6re - h5re)
 	Q_cond = h4re - h5re 
-	eta = abs((W_t - W_p)*100/Q_cald) #Overheated efficiency
+	eta = abs((W_t - W_p)*100/Q_cald) 
 	mass_flux = abs(W_cycle/(W_t-W_p))
 	bwr = W_p / W_t *100
 	W_t *= mass_flux/1000 #[MW]
@@ -487,6 +509,56 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	EnergyParams = [W_t, Q_cald, W_p, Q_cond, bwr, eta, mass_flux]
 	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_cald [MW]', 'W_p [MW]', 'Q_cond [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
 
-	return re_df, EnergyParams
+	######Ploting the cycle####### 
+
+	water_curve()
+	#1 --> 1'
+	T = np.array([t1, t1_oh])
+	S = np.array([s1, s1_oh])
+	plt.plot(S,T, '--ko', alpha=1)
+	## 1'--> 2
+	T = np.array([t1_oh, t2_oh])
+	S = np.array([s1_oh, s2_oh])
+	plt.plot(S,T, '--ko', alpha=1, label='Real')
+	## 1'--> 2 ideal
+	T = np.array([t1_oh, t2_oh_id])
+	S = np.array([s1_oh, s2_oh_id])
+	plt.plot(S,T, '--go', alpha=1, label='Ideal')
+	## 2-->3
+	T = np.array([t2_oh, t3_oh])
+	S = np.array([s2_oh, s3_oh])
+	plt.plot(S,T, '--ko', alpha=1)
+	## 2ideal -->3
+	T = np.array([t2_oh_id, t3_oh])
+	S = np.array([s2_oh_id, s3_oh])
+	plt.plot(S,T, '--go', alpha=1)
+	## 3--> 4
+	T = np.array([t3_oh, t4_oh])
+	S = np.array([s3_oh, s4_oh])
+	plt.plot(S,T, '--ko', alpha=1)
+	## 3--> 4ideal
+	T = np.array([t3_oh, t4_oh_id])
+	S = np.array([s3_oh, s4_oh_id])
+	plt.plot(S,T, '--go', alpha=1)
+	##4-->1
+	H2O = pm.get('mp.H2O')
+	T = np.linspace(t4_oh, t1_oh,100)
+	p = p4 * np.ones(len(T))
+	S = H2O.s(T=T,p=p)
+	plt.plot(S,T,'--k', alpha=1)
+	##4ideal -->1
+	H2O = pm.get('mp.H2O')
+	T = np.linspace(t4_oh_id, t1_oh,100)
+	p = p4 * np.ones(len(T))
+	S = H2O.s(T=T,p=p)
+	plt.plot(S,T,'--g', alpha=1)
+
+	plt.title('Reheated Rankine cycle')
+	plt.xlabel('Entropy s [kJ/(kg K)]')
+	plt.ylabel('Temperature T [K]')
+	plt.legend(loc=0)
+
+
+	return reheated_id_df, EnergyParams_id, reheated_df, EnergyParams
 
 #print(reheat_Rankine())
