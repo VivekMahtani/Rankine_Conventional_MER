@@ -431,7 +431,7 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	#State 2 ideal
 	s2re_id = s1re
 	t2re_id, x2_id = fluid.T_s(s=s2re_id, p=p2re, quality=True)
-	h2re_id = fluid.h(p=p2re, T=t2re_id, x=x2)
+	h2re_id = fluid.h(p=p2re, T=t2re_id, x=x2_id)
 	State_2_id = np.array([t2re_id, p2re, h2re_id, s2re_id, x2_id])
 	#State 2
 	h2re = h1re - (eta_t_re1*(h1re-h2re_id))
@@ -446,7 +446,7 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	#State 4 ideal
 	s4re_id = s3re
 	t4re_id, x4_id = fluid.T_s(s=s4re_id, p=p4re, quality=True)
-	h4re_id = fluid.h(p=p4re, T=t4re_id, x=x4)
+	h4re_id = fluid.h(p=p4re, T=t4re_id, x=x4_id)
 	State_4_id = np.array([t4re_id, p4re, h4re_id, s4re_id, x4_id])
 	#State 4
 	h4re = h3re-(eta_t_re2*(h3re-h4re_id))
@@ -464,16 +464,16 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	s6re_id = s5re
 	p6re = p1re
 	t6re_id, x6_id = fluid.T_s(s=s6re_id, p=p6re, quality=True)
-	h6re_id = fluid.h(p=p6re, T=T6re_id, x=x6_id)
-	State_6_id = np.array([t6re_id, p6re, h6re, s6re_id, x6_id])
+	h6re_id = fluid.h(p=p6re, T=t6re_id, x=x6_id)
+	State_6_id = np.array([t6re_id, p6re, h6re_id, s6re_id, x6_id])
 	#State 6
 	h6re = h5re + (h6re_id-h5re)/eta_p
 	t6re, x6 = fluid.T_h(h=h6re, p=p6re, quality=True)
-	s6re = fluid.h(T=t6re, p=p6re, x=x6)
+	s6re = fluid.s(T=t6re, p=p6re, x=x6)
 	State_6 = np.array([t6re, p6re, h6re, s6re, x6])
 
 	data_id = [State_1, State_2_id, State_3, State_4_id, State_5, State_6_id]
-	reheated_id_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
+	reheated_id_df = pd.DataFrame(data=data_id, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 
 	W_t = (h1re - h2re_id) + (h3re - h4re_id)
@@ -512,44 +512,57 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	######Ploting the cycle####### 
 
 	water_curve()
-	#1 --> 1'
-	T = np.array([t1, t1_oh])
-	S = np.array([s1, s1_oh])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 1'--> 2
-	T = np.array([t1_oh, t2_oh])
-	S = np.array([s1_oh, s2_oh])
-	plt.plot(S,T, '--ko', alpha=1, label='Real')
-	## 1'--> 2 ideal
-	T = np.array([t1_oh, t2_oh_id])
-	S = np.array([s1_oh, s2_oh_id])
+	#1 --> 2 ideal
+	T = np.array([t1re, t2re_id])
+	S = np.array([s1re, s2re_id])
 	plt.plot(S,T, '--go', alpha=1, label='Ideal')
+	## 1--> 2
+	T = np.array([t1re, t2re])
+	S = np.array([s1re, s2re])
+	plt.plot(S,T, '--ko', alpha=1, label='Real')
 	## 2-->3
-	T = np.array([t2_oh, t3_oh])
-	S = np.array([s2_oh, s3_oh])
+	T = np.array([t2re, t3re])
+	S = np.array([s2re, s3re])
 	plt.plot(S,T, '--ko', alpha=1)
-	## 2ideal -->3
-	T = np.array([t2_oh_id, t3_oh])
-	S = np.array([s2_oh_id, s3_oh])
+	## 2ideal --> 3
+	T = np.array([t2re_id, t3re])
+	S = np.array([s2re_id, s3re])
 	plt.plot(S,T, '--go', alpha=1)
 	## 3--> 4
-	T = np.array([t3_oh, t4_oh])
-	S = np.array([s3_oh, s4_oh])
+	T = np.array([t3re, t4re])
+	S = np.array([s3re, s4re])
 	plt.plot(S,T, '--ko', alpha=1)
 	## 3--> 4ideal
-	T = np.array([t3_oh, t4_oh_id])
-	S = np.array([s3_oh, s4_oh_id])
+	T = np.array([t3re, t4re_id])
+	S = np.array([s3re, s4re_id])
 	plt.plot(S,T, '--go', alpha=1)
-	##4-->1
+	## 4 --> 5
+	T = np.array([t4re, t5re])
+	S = np.array([s4re, s5re])
+	plt.plot(S,T, '--ko', alpha=1)
+	## 4ideal --> 5
+	T = np.array([t4re_id, t5re])
+	S = np.array([s4re_id, s5re])
+	plt.plot(S,T, '--go', alpha=1)
+	## 5 --> 6
+	T = np.array([t5re, t6re])
+	S = np.array([s5re, s6re])
+	plt.plot(S,T, '--ko', alpha=1)
+	## 5 --> 6ideal
+	T = np.array([t5re, t6re_id])
+	S = np.array([s5re, s6re_id])
+	plt.plot(S,T, '--go', alpha=1)
+
+	##6-->1
 	H2O = pm.get('mp.H2O')
-	T = np.linspace(t4_oh, t1_oh,100)
-	p = p4 * np.ones(len(T))
+	T = np.linspace(t6re, t1re,100)
+	p = p6re * np.ones(len(T))
 	S = H2O.s(T=T,p=p)
 	plt.plot(S,T,'--k', alpha=1)
-	##4ideal -->1
+	##6ideal -->1
 	H2O = pm.get('mp.H2O')
-	T = np.linspace(t4_oh_id, t1_oh,100)
-	p = p4 * np.ones(len(T))
+	T = np.linspace(t6re_id, t1re,100)
+	p = p6re * np.ones(len(T))
 	S = H2O.s(T=T,p=p)
 	plt.plot(S,T,'--g', alpha=1)
 
@@ -557,8 +570,11 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
 	plt.legend(loc=0)
+	
+	plt.savefig('Reheated_Rankine.png')
+	plt.show()
 
 
 	return reheated_id_df, EnergyParams_id, reheated_df, EnergyParams
 
-#print(reheat_Rankine())
+print(reheat_Rankine())
