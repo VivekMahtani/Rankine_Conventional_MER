@@ -26,95 +26,103 @@ eta_t_real = 0.85 #performance, or efficiency of the turbine
 eta_p_real = 0.85 #Same for the pump
 W_cycle = 100*1e03 #kW
 
-def ideal_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, W_cycle=W_cycle):
-	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
-	#State 1:
-	h1 = fluid.h(p=p1, x=x1)[0]
-	s1 = fluid.s(p=p1, x=x1)[0]
-	t1 = fluid.T(p=p1, x=x1)[0]
-	State_1 = np.array([t1, p1, h1, s1, x1])
-	#State 2:
-	s2 = s1 #Isoentropic process.
-	t2, x2 = fluid.T_s(s=s2, p=p2, quality = True)
-	h2 = fluid.h(p=p2, T=t2, x=x2)
-	State_2 = np.array([t2, p2, h2, s2, x2])
-	#State 3:
-	t3 = t2 #Isothermic process
-	p3 = fluid.p(T=t3, x=x3)
-	s3 = fluid.s(T=t3, p=p3, x=x3)
-	h3 = fluid.h(T=t3, p=p3, x=x3)
-	State_3 = np.array([t3, p3, h3, s3, x3])
-	#State 4:
-	s4 = s3 #Isoentropic process
-	p4 = p1 #Isobaric process
-	t4, x4 = fluid.T_s(s=s4, p=p4, quality=True)
-	h4 = fluid.h(p=p4, T=t4, x=x4)
-	State_4 = np.array([t4, p4, h4, s4, x4])
-	data = [State_1, State_2, State_3, State_4]
-	ideal_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4'],
-		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
-	######## We have here all the states of the cycle ##################
-	#Now we calculate the rest of the parameters.
+# def ideal_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, W_cycle=W_cycle):
+# 	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
+# 	#State 1:
+# 	h1 = fluid.h(p=p1, x=x1)[0]
+# 	s1 = fluid.s(p=p1, x=x1)[0]
+# 	t1 = fluid.T(p=p1, x=x1)[0]
+# 	State_1 = np.array([t1, p1, h1, s1, x1])
+# 	#State 2:
+# 	s2 = s1 #Isoentropic process.
+# 	t2, x2 = fluid.T_s(s=s2, p=p2, quality = True)
+# 	h2 = fluid.h(p=p2, T=t2, x=x2)
+# 	State_2 = np.array([t2, p2, h2, s2, x2])
+# 	#State 3:
+# 	t3 = t2 #Isothermic process
+# 	p3 = fluid.p(T=t3, x=x3)
+# 	s3 = fluid.s(T=t3, p=p3, x=x3)
+# 	h3 = fluid.h(T=t3, p=p3, x=x3)
+# 	State_3 = np.array([t3, p3, h3, s3, x3])
+# 	#State 4:
+# 	s4 = s3 #Isoentropic process
+# 	p4 = p1 #Isobaric process
+# 	t4, x4 = fluid.T_s(s=s4, p=p4, quality=True)
+# 	h4 = fluid.h(p=p4, T=t4, x=x4)
+# 	State_4 = np.array([t4, p4, h4, s4, x4])
+# 	data = [State_1, State_2, State_3, State_4]
+# 	ideal_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4'],
+# 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
+# 	######## We have here all the states of the cycle ##################
+# 	#Now we calculate the rest of the parameters.
 
-	W_t = h1 - h2 #Work done by the turbine [kJ/kg]
-	Q_out = h2-h3 #Heat out [kJ/kg]
-	#Work from the compression
-	W_p = h4-h3 #kJ/kg
-	Q_in = h1-h4 #Absorbed heat Calor en la caldera. kJ/kg
-	eta = abs((W_t-W_p)*100/Q_in) #ideal efficiency
-	mass_flux = abs(W_cycle/(W_t-W_p)) #kg/s
-	bwr = W_p / W_t *100 #%
+# 	W_t = h1 - h2 #Work done by the turbine [kJ/kg]
+# 	Q_out = h2-h3 #Heat out [kJ/kg]
+# 	#Work from the compression
+# 	W_p = h4-h3 #kJ/kg
+# 	Q_in = h1-h4 #Absorbed heat Calor en la caldera. kJ/kg
+# 	eta = abs((W_t-W_p)*100/Q_in) #ideal efficiency
+# 	mass_flux = abs(W_cycle/(W_t-W_p)) #kg/s
+# 	bwr = W_p / W_t *100 #%
 
-	W_t *= mass_flux/1000 #[MW]
-	W_p *= mass_flux/1000 #[MW]
-	Q_in *= mass_flux/1000 #[MW]
-	Q_out *= mass_flux/1000 #[MW]
-	EnergyParams = [W_t, Q_out, W_p, Q_in, bwr, eta, mass_flux]
+# 	W_t *= mass_flux/1000 #[MW]
+# 	W_p *= mass_flux/1000 #[MW]
+# 	Q_in *= mass_flux/1000 #[MW]
+# 	Q_out *= mass_flux/1000 #[MW]
+# 	EnergyParams = [W_t, Q_out, W_p, Q_in, bwr, eta, mass_flux]
 
-	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
-    ###############PLOTTING THE IDEAL CYCLE########################
-	plt.figure(1)
-	##########IDEAL CYCLE###########
-	## 1--> 2
-	T = np.array([t1, t2])
-	S = np.array([s1, s2])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 2-->3
-	T = np.array([t2, t3])
-	S = np.array([s2, s3])
-	plt.plot(S,T, '--ko', alpha=1)
-	## 3--> 4
-	T = np.array([t3, t4])
-	S = np.array([s3, s4])
-	plt.plot(S,T, '--ko', alpha=1)
-	##4-->1
-	H2O = pm.get('mp.H2O')
-	T = np.linspace(t4, t1,100)
-	p = p4 * np.ones(len(T))
-	S = H2O.s(T=T,p=p)
-	plt.plot(S,T,'--k', alpha=1)
-	#From the pyromat documentation we get the water curve:
-	# Get the critical and triple point properties
-	Tt,pt = H2O.triple()
-	Tc,pc = H2O.critical()
-	# Explore the temperatures between Tt and Tc in 5K increments
-	T = np.linspace(Tt,Tc,1000)
-	s0 = np.zeros(len(T))
-	s1 = np.zeros(len(T))
-	for i in range(len(T)):
-	    s0[i]=H2O.s(T[i],x=0)
-	    s1[i]=H2O.s(T[i],x=1)
-	plt.plot(s0,T,'cyan',s1,T,'red',ls='--')
-	#plt.show()
-	return ideal_df, EnergyParams
+# 	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+#     ###############PLOTTING THE IDEAL CYCLE########################
+# 	plt.figure()
 
-	##############Real Cycle##################
-def real_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
+# 	## 1--> 2
+# 	T = np.array([t1, t2])
+# 	S = np.array([s1, s2])
+# 	plt.plot(S,T, '--ko', alpha=1, label='ideal')
+# 	## 2-->3
+# 	T = np.array([t2, t3])
+# 	S = np.array([s2, s3])
+# 	plt.plot(S,T, '--ko', alpha=1)
+# 	## 3--> 4
+# 	T = np.array([t3, t4])
+# 	S = np.array([s3, s4])
+# 	plt.plot(S,T, '--ko', alpha=1)
+# 	##4-->1
+# 	H2O = pm.get('mp.H2O')
+# 	T = np.linspace(t4, t1,100)
+# 	p = p4 * np.ones(len(T))
+# 	S = H2O.s(T=T,p=p)
+# 	plt.plot(S,T,'--k', alpha=1)
+# 	#From the pyromat documentation we get the water curve:
+# 	# Get the critical and triple point properties
+# 	Tt,pt = H2O.triple()
+# 	Tc,pc = H2O.critical()
+# 	# Explore the temperatures between Tt and Tc in 5K increments
+# 	T = np.linspace(Tt,Tc,1000)
+# 	s0 = np.zeros(len(T))
+# 	s1 = np.zeros(len(T))
+# 	for i in range(len(T)):
+# 	    s0[i]=H2O.s(T[i],x=0)
+# 	    s1[i]=H2O.s(T[i],x=1)
+# 	plt.plot(s0,T,'cyan',s1,T,'red',ls='--')
+
+# 	plt.title('Rankine cycle with irreversibilities')
+# 	plt.xlabel('Entropy s [kJ/(kg K)]')
+# 	plt.ylabel('Temperature T [K]')
+# 	plt.legend(loc=0)
+
+# 	plt.show()
+# 	return ideal_df, EnergyParams
+
+# #print(ideal_Rankine())
+
+##############Ideal Cycle and with irreversibilities##################
+def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
     t1_oh=723.15, eta_t_real=eta_t_real, eta_p_real=eta_p_real,
     W_cycle=W_cycle):
 	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
-	# #Actally, the only states that change are 2 and 4
-	#state 1:
+	# #Actally, the only states that change are 2 and 4 for the irreversibilities
+	#State 1:
 	h1 = fluid.h(p=p1, x=x1)
 	s1 = fluid.s(p=p1, x=x1)
 	t1 = fluid.T(p=p1, x=x1)
@@ -148,45 +156,89 @@ def real_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	t4real, x4real  = H2O.T_h(h=h4real,p=p4, quality=True)
 	s4real  = H2O.s(T=t4real,p=p4,x=x4real)
 	State_4_real = np.array([t4real, p4, h4real, s4real, x4real])
-	data = [State_1, State_2_real, State_3, State_4_real]
-	real_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4'],
+
+	data_ideal = [State_1, State_2, State_3, State_4]
+	ideal_df = pd.DataFrame(data=data_ideal, index=['State_1', 'State_2', 'State_3', 'State_4'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 
-	W_t = h1 - h2real #Work done by the turbine
-	Q_out = h2real-h3 #Heat
+	data_real = [State_1, State_2_real, State_3, State_4_real]
+	real_df = pd.DataFrame(data=data_real, index=['State_1', 'State_2', 'State_3', 'State_4'],
+		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
+
+	#Ideal work and so on
+	W_t = h1 - h2 #Work done by the turbine [kJ/kg]
+	Q_out = h2-h3 #Heat out [kJ/kg]
 	#Work from the compression
-	W_p = h4real-h3
-	Q_in = h1-h4real #Absorbed heat
+	W_p = h4-h3 #kJ/kg
+	Q_in = h1-h4 #Absorbed heat Calor en la caldera. kJ/kg
 	eta = abs((W_t-W_p)*100/Q_in) #ideal efficiency
-	mass_flux = abs(W_cycle/(W_t-W_p))
-	bwr = W_p / W_t *100
+	mass_flux = abs(W_cycle/(W_t-W_p)) #kg/s
+	bwr = W_p / W_t *100 #%
+
 	W_t *= mass_flux/1000 #[MW]
 	W_p *= mass_flux/1000 #[MW]
 	Q_in *= mass_flux/1000 #[MW]
 	Q_out *= mass_flux/1000 #[MW]
-	EnergyParams = [W_t, Q_out, W_p, Q_in, bwr, eta, mass_flux]
-	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
 
-    ###############PLOTTING THE REAL CYCLE########################
-	plt.figure(2)
-	## 1--> 2
+	EnergyParams_ideal = [W_t, Q_out, W_p, Q_in, bwr, eta, mass_flux]
+	EnergyParams_ideal = pd.DataFrame(data=EnergyParams_ideal, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+
+	# Real works and so on
+	W_t_real = h1 - h2real #Work done by the turbine
+	Q_out_real = h2real-h3 #Heat
+	#Work from the compression
+	W_p_real = h4real-h3
+	Q_in_real = h1-h4real #Absorbed heat
+	eta_real = abs((W_t_real-W_p_real)*100/Q_in_real) #ideal efficiency
+	mass_flux_real = abs(W_cycle/(W_t_real-W_p_real))
+	bwr_real = W_p_real / W_t_real *100
+	W_t_real *= mass_flux_real/1000 #[MW]
+	W_p_real *= mass_flux_real/1000 #[MW]
+	Q_in_real *= mass_flux_real/1000 #[MW]
+	Q_out_real *= mass_flux_real/1000 #[MW]
+
+	EnergyParams_real = [W_t_real, Q_out_real, W_p_real, Q_in_real, bwr_real, eta_real, mass_flux_real]
+	EnergyParams_real = pd.DataFrame(data=EnergyParams_real, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+
+    ###############PLOTTING THE CYCLES########################
+	plt.figure()
+	## 1--> 2real
 	T = np.array([t1, t2real])
 	S = np.array([s1, s2real])
-	plt.plot(S,T, '--ko', alpha=1)
+	plt.plot(S,T, '--ko', alpha=1, label='Real')
+	## 1-->2
+	T = np.array([t1, t2])
+	S = np.array([s1, s2])
+	plt.plot(S,T, '--go', alpha=1, label='Ideal')
 	## 2-->3
+	T = np.array([t2, t3])
+	S = np.array([s2, s3])
+	plt.plot(S,T, '--go', alpha=1)
+	## 2real-->3
 	T = np.array([t2real, t3])
 	S = np.array([s2real, s3])
 	plt.plot(S,T, '--ko', alpha=1)
 	## 3--> 4
+	T = np.array([t3, t4])
+	S = np.array([s3, s4])
+	plt.plot(S,T, '--go', alpha=1)
+	## 3--> 4real
 	T = np.array([t3, t4real])
 	S = np.array([s3, s4real])
 	plt.plot(S,T, '--ko', alpha=1)
 	##4-->1
 	H2O = pm.get('mp.H2O')
+	T = np.linspace(t4, t1,100)
+	p = p4 * np.ones(len(T))
+	S = H2O.s(T=T,p=p)
+	plt.plot(S,T,'--g', alpha=1)
+	##4real-->1
+	H2O = pm.get('mp.H2O')
 	T = np.linspace(t4real, t1,100)
 	p = p4 * np.ones(len(T))
 	S = H2O.s(T=T,p=p)
 	plt.plot(S,T,'--k', alpha=1)
+
 	#From the pyromat documentation we get the water curve:
 	# Get the critical and triple point properties
 	Tt,pt = H2O.triple()
@@ -199,8 +251,16 @@ def real_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	    s0[i]=H2O.s(T[i],x=0)
 	    s1[i]=H2O.s(T[i],x=1)
 	plt.plot(s0,T,'cyan',s1,T,'red',ls='--')
-	#plt.show()
-	return real_df, EnergyParams
+
+	plt.title('Rankine cycle')
+	plt.xlabel('Entropy s [kJ/(kg K)]')
+	plt.ylabel('Temperature T [K]')
+	plt.legend(loc=0)
+
+	plt.show()
+	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real
+
+print(Rankine_cycle())
 
 
 def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
@@ -272,7 +332,7 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	EnergyParams = [W_t_oh, Q_out_oh, W_p_oh, Q_in_oh, bwr, eta_oh, mass_flux]
 	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
     ###############PLOTTING THE REAL CYCLE########################
-	plt.figure(3)
+	plt.figure()
 	#1 --> 1'
 	T = np.array([t1, t1_oh])
 	S = np.array([s1, s1_oh])
@@ -309,6 +369,8 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	plt.plot(s0,T,'cyan',s1,T,'red',ls='--')
 	plt.show()
 	return real_oh_df, EnergyParams
+
+#print(overheated_Rankine())
 
 
 
@@ -392,11 +454,11 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	EnergyParams = [W_t, Q_cald, W_p, Q_cond, bwr, eta, mass_flux]
 	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_cald [MW]', 'W_p [MW]', 'Q_cond [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
 
-
-
 	return re_df, EnergyParams
 
-print(reheat_Rankine())
+#print(reheat_Rankine())
+
+
 
 
 
