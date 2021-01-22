@@ -6,7 +6,7 @@ import pandas as pd
 '''
 I know it's a little crappy. You should separate the graphic representation functions
 of the state's calculations. And it must be generalised for any
-initial data... I know some times I calculate more than 1 time the same thing.
+initial data... I know some times I also calculate more than once the same thing.
 '''
 
 plt.style.use('seaborn')
@@ -14,9 +14,6 @@ plt.style.use('seaborn')
 fluid = pm.get('mp.H2O')
 p1 = 8 #MPa
 p2 = 0.008 #MPa
-
-#p1 = P1*1e-5 #bar #PYROMAT WORKS WITH bar
-#p2 = P2*1e-5 #bar
 
 x1 = 1.
 x3 = 0.
@@ -26,6 +23,8 @@ eta_t_real = 0.85 #performance, or efficiency of the turbine
 eta_p_real = 0.85 #Same for the pump
 W_cycle = 100*1e03 #kW
 
+''' This function only prints the ideal cycle, which is also printed in the next 
+function with the cycle with irreversibilities
 # def ideal_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, W_cycle=W_cycle):
 # 	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
 # 	#State 1:
@@ -115,6 +114,22 @@ W_cycle = 100*1e03 #kW
 # 	return ideal_df, EnergyParams
 
 # #print(ideal_Rankine())
+'''
+def water_curve():
+	#From the pyromat documentation we get the water curve:
+	# Get the critical and triple point properties
+	H2O = pm.get('mp.H2O')
+	Tt,pt = H2O.triple()
+	Tc,pc = H2O.critical()
+	# Explore the temperatures between Tt and Tc in 5K increments
+	T = np.linspace(Tt,Tc,1000)
+	s0 = np.zeros(len(T))
+	s1 = np.zeros(len(T))
+	fig = plt.figure()
+	for i in range(len(T)):
+	    s0[i]=H2O.s(T[i],x=0)
+	    s1[i]=H2O.s(T[i],x=1)
+	return plt.plot(s0,T,'cyan',s1,T,'red',ls='--')
 
 ##############Ideal Cycle and with irreversibilities##################
 def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
@@ -201,7 +216,7 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	EnergyParams_real = pd.DataFrame(data=EnergyParams_real, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
 
     ###############PLOTTING THE CYCLES########################
-	plt.figure()
+	water_curve()
 	## 1--> 2real
 	T = np.array([t1, t2real])
 	S = np.array([s1, s2real])
@@ -239,25 +254,13 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	S = H2O.s(T=T,p=p)
 	plt.plot(S,T,'--k', alpha=1)
 
-	#From the pyromat documentation we get the water curve:
-	# Get the critical and triple point properties
-	Tt,pt = H2O.triple()
-	Tc,pc = H2O.critical()
-	# Explore the temperatures between Tt and Tc in 5K increments
-	T = np.linspace(Tt,Tc,1000)
-	s0 = np.zeros(len(T))
-	s1 = np.zeros(len(T))
-	for i in range(len(T)):
-	    s0[i]=H2O.s(T[i],x=0)
-	    s1[i]=H2O.s(T[i],x=1)
-	plt.plot(s0,T,'cyan',s1,T,'red',ls='--')
-
 	plt.title('Rankine cycle')
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
 	plt.legend(loc=0)
 
 	plt.show()
+	text = 'This is returning the ideal Rankine parameters and the parameters with irreversibilities'
 	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real
 
 print(Rankine_cycle())
@@ -332,7 +335,7 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	EnergyParams = [W_t_oh, Q_out_oh, W_p_oh, Q_in_oh, bwr, eta_oh, mass_flux]
 	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
     ###############PLOTTING THE REAL CYCLE########################
-	plt.figure()
+	water_curve()
 	#1 --> 1'
 	T = np.array([t1, t1_oh])
 	S = np.array([s1, s1_oh])
@@ -355,22 +358,11 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	p = p4 * np.ones(len(T))
 	S = H2O.s(T=T,p=p)
 	plt.plot(S,T,'--k', alpha=1)
-	#From the pyromat documentation we get the water curve:
-	# Get the critical and triple point properties
-	Tt,pt = H2O.triple()
-	Tc,pc = H2O.critical()
-	# Explore the temperatures between Tt and Tc in 5K increments
-	T = np.linspace(Tt,Tc,1000)
-	s0 = np.zeros(len(T))
-	s1 = np.zeros(len(T))
-	for i in range(len(T)):
-	    s0[i]=H2O.s(T[i],x=0)
-	    s1[i]=H2O.s(T[i],x=1)
-	plt.plot(s0,T,'cyan',s1,T,'red',ls='--')
+
 	plt.show()
 	return real_oh_df, EnergyParams
 
-#print(overheated_Rankine())
+print(overheated_Rankine())
 
 
 
@@ -457,12 +449,3 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	return re_df, EnergyParams
 
 #print(reheat_Rankine())
-
-
-
-
-
-    
-#print(ideal_Rankine())
-#print(real_Rankine())
-#print(overheated_Rankine())
