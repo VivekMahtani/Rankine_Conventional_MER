@@ -216,7 +216,7 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	EnergyParams_real = pd.DataFrame(data=EnergyParams_real, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
 
     ###############PLOTTING THE CYCLES########################
-	water_curve()
+	water_curve() #With this function I create a figure with the water curve
 	## 1--> 2real
 	T = np.array([t1, t2real])
 	S = np.array([s1, s2real])
@@ -258,9 +258,8 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
 	plt.legend(loc=0)
-
-	plt.show()
-	text = 'This is returning the ideal Rankine parameters and the parameters with irreversibilities'
+	#plt.savefig('RankineCycle.png')
+	#plt.show()
 	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real
 
 print(Rankine_cycle())
@@ -270,7 +269,7 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
     t1_oh=723.15, eta_t_real=eta_t_real, eta_p_real=eta_p_real,
     W_cycle=W_cycle):
 	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
-	#state 1:
+	#State 1:
 	h1 = fluid.h(p=p1, x=x1)
 	s1 = fluid.s(p=p1, x=x1)
 	t1 = fluid.T(p=p1, x=x1)
@@ -278,53 +277,51 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	#Overheated state 1
 	h1_oh = fluid.h(p=p1,T=t1_oh)
 	s1_oh = fluid.s(p=p1,T=t1_oh)
-	x1_oh = x1
+	x1_oh = fluid.T_s(s=s1_oh, p=p1, quality=True)[1]
 	State_1_oh = np.array([t1_oh, p1, h1_oh, s1_oh, x1_oh])
-	#State 2:
-	s2 = s1_oh #Isoentropic process.
-	t2, x2 = fluid.T_s(s=s2, p=p2, quality=True)
-	h2 = fluid.h(p=p2, T=t2, x=x2)
-	State_2 = np.array([t2, p2, h2, s2, x2])
-	#Real State 2
-	h2real = h1 - eta_t_real*(h1-h2)
-	t2real, x2real = fluid.T_h(h=h2real, p=p2, quality=True)
-	s2real = fluid.s(T=t2real, p=p2, x=x2real)
-	State_2_real = np.array([t2real, p2, h2real, s2real, x2real])
-	#Overheated state 2
-	s2_oh = s1_oh
-	t2_oh, x2_oh = fluid.T_s(s=s2_oh, p=p2, quality=True)
+	#Overheated state 2 (ideal):
+	s2_oh_id = s1_oh #Isoentropic process.
+	t2_oh_id, x2_oh_id = fluid.T_s(s=s2_oh_id, p=p2, quality=True)
+	h2_oh_id = fluid.h(p=p2, T=t2_oh_id, x=x2_oh_id)
+	State_2_oh_id = np.array([t2_oh_id, p2, h2_oh_id, s2_oh_id, x2_oh_id])
+	#Overheated state 2 (real)
+	h2_oh = h1_oh - eta_t_real*(h1_oh-h2_oh_id)
+	t2_oh, x2_oh = fluid.T_h(h=h2_oh, p=p2, quality=True)
 	s2_oh = fluid.s(T=t2_oh, p=p2, x=x2_oh)
-	h2 = fluid.h(T=t2_oh, x=x2_oh)
-	h2_oh = h1_oh - eta_t_real*(h1_oh-h2)
 	W_r_oh = h2_oh - h1_oh
 	State_2_oh = np.array([t2_oh, p2, h2_oh, s2_oh, x2_oh])
 	#State 3:
-	t3 = t2 #Isothermic process
-	p3 = fluid.p(T=t3, x=x3)
-	s3 = fluid.s(T=t3, p=p3, x=x3)
-	h3 = fluid.h(T=t3, p=p3, x=x3)
-	State_3 = np.array([t3, p3, h3, s3, x3])
+	t3_oh = t2_oh #Isothermic process
+	p3 = fluid.p(T=t3_oh, x=x3)
+	s3_oh = fluid.s(T=t3_oh, p=p3, x=x3)
+	h3_oh = fluid.h(T=t3_oh, p=p3, x=x3)
+	State_3_oh = np.array([t3_oh, p3, h3_oh, s3_oh, x3])
+
 	H2O = pm.get('mp.H2O')
-	#State 4:
-	s4 = s3 #Isoentropic process
+	#State 4 (Ideal):
+	s4_oh_id = s3_oh #Isoentropic process
 	p4 = p1 #Isobaric process
-	t4, x4 = fluid.T_s(s=s4, p=p4, quality=True)
-	h4 = fluid.h(p=p4, T=t4, x=x4)
-	State_4 = np.array([t4, p4, h4, s4, x4])
+	t4_oh_id, x4_oh_id = fluid.T_s(s=s4_oh_id, p=p4, quality=True)
+	h4_oh_id = fluid.h(p=p4, T=t4_oh_id, x=x4_oh_id)
+	State_4_oh_id = np.array([t4_oh_id, p4, h4_oh_id, s4_oh_id, x4_oh_id])
+
 	#Real State 4
-	h4real=h3+(h4-h3)/eta_p_real
-	t4real, x4real  = H2O.T_h(h=h4real,p=p4, quality=True)
-	s4real  = H2O.s(T=t4real,p=p4,x=x4real)
-	State_4_real = np.array([t4real, p4, h4real, s4real, x4real])
-	data = [State_1_oh, State_2_oh, State_3, State_4_real]
-	real_oh_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4'],
+	h4_oh=h3_oh+(h4_oh_id-h3_oh)/eta_p_real
+	t4_oh, x4_oh  = H2O.T_h(h=h4_oh,p=p4, quality=True)
+	s4_oh  = H2O.s(T=t4_oh,p=p4,x=x4_oh)
+	State_4_oh = np.array([t4_oh, p4, h4_oh, s4_oh, x4_oh])
+
+	#Ideal oh
+	data_ideal = [State_1, State_1_oh, State_2_oh_id, State_3_oh, State_4_oh_id]
+	ideal_oh_df = pd.DataFrame(data=data_ideal, index=['State_1','State_1_oh', 'State_2', 'State_3', 'State_4'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
-	W_t_oh = h1_oh - h2_oh
-	Q_out_oh = h2_oh - h3 #From the overheated state
+
+	W_t_oh = h1_oh - h2_oh_id
+	Q_out_oh = h2_oh_id - h3_oh #From the overheated state
 	#Work from the compression
 	#Overheated work
-	W_p_oh = (h4real - h3)
-	Q_in_oh = h1_oh-h4real #Overheated heat
+	W_p_oh = (h4_oh_id - h3_oh)
+	Q_in_oh = h1_oh-h4_oh_id #Overheated heat
 	eta_oh = abs((W_t_oh-W_p_oh)*100/Q_in_oh) #Overheated efficiency
 	mass_flux = abs(W_cycle/(W_t_oh-W_p_oh))
 	bwr = W_p_oh / W_t_oh *100
@@ -332,8 +329,28 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	W_p_oh *= mass_flux/1000 #[MW]
 	Q_in_oh *= mass_flux/1000 #[MW]
 	Q_out_oh *= mass_flux/1000 #[MW]
-	EnergyParams = [W_t_oh, Q_out_oh, W_p_oh, Q_in_oh, bwr, eta_oh, mass_flux]
-	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+	EnergyParams_ideal = [W_t_oh, Q_out_oh, W_p_oh, Q_in_oh, bwr, eta_oh, mass_flux]
+	EnergyParams_ideal = pd.DataFrame(data=EnergyParams_ideal, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+
+
+	data = [State_1_oh, State_2_oh, State_3_oh, State_4_oh]
+	real_oh_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4'],
+		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
+	W_t_oh = h1_oh - h2_oh
+	Q_out_oh = h2_oh - h3_oh #From the overheated state
+	#Work from the compression
+	#Overheated work
+	W_p_oh = (h4_oh - h3_oh)
+	Q_in_oh = h1_oh-h4_oh #Overheated heat
+	eta_oh = abs((W_t_oh-W_p_oh)*100/Q_in_oh) #Overheated efficiency
+	mass_flux = abs(W_cycle/(W_t_oh-W_p_oh))
+	bwr = W_p_oh / W_t_oh *100
+	W_t_oh *= mass_flux/1000 #[MW]
+	W_p_oh *= mass_flux/1000 #[MW]
+	Q_in_oh *= mass_flux/1000 #[MW]
+	Q_out_oh *= mass_flux/1000 #[MW]
+	EnergyParams_real = [W_t_oh, Q_out_oh, W_p_oh, Q_in_oh, bwr, eta_oh, mass_flux]
+	EnergyParams_real = pd.DataFrame(data=EnergyParams_real, index=['W_t [MW]', 'Q_out [MW]', 'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
     ###############PLOTTING THE REAL CYCLE########################
 	water_curve()
 	#1 --> 1'
@@ -343,24 +360,46 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	## 1'--> 2
 	T = np.array([t1_oh, t2_oh])
 	S = np.array([s1_oh, s2_oh])
-	plt.plot(S,T, '--ko', alpha=1)
+	plt.plot(S,T, '--ko', alpha=1, label='Real')
+	## 1'--> 2 ideal
+	T = np.array([t1_oh, t2_oh_id])
+	S = np.array([s1_oh, s2_oh_id])
+	plt.plot(S,T, '--go', alpha=1, label='Ideal')
 	## 2-->3
-	T = np.array([t2_oh, t3])
-	S = np.array([s2_oh, s3])
+	T = np.array([t2_oh, t3_oh])
+	S = np.array([s2_oh, s3_oh])
 	plt.plot(S,T, '--ko', alpha=1)
+	## 2ideal -->3
+	T = np.array([t2_oh_id, t3_oh])
+	S = np.array([s2_oh_id, s3_oh])
+	plt.plot(S,T, '--go', alpha=1)
 	## 3--> 4
-	T = np.array([t3, t4real])
-	S = np.array([s3, s4real])
+	T = np.array([t3_oh, t4_oh])
+	S = np.array([s3_oh, s4_oh])
 	plt.plot(S,T, '--ko', alpha=1)
+	## 3--> 4ideal
+	T = np.array([t3_oh, t4_oh_id])
+	S = np.array([s3_oh, s4_oh_id])
+	plt.plot(S,T, '--go', alpha=1)
 	##4-->1
 	H2O = pm.get('mp.H2O')
-	T = np.linspace(t4real, t1,100)
+	T = np.linspace(t4_oh, t1_oh,100)
 	p = p4 * np.ones(len(T))
 	S = H2O.s(T=T,p=p)
 	plt.plot(S,T,'--k', alpha=1)
+	##4ideal -->1
+	H2O = pm.get('mp.H2O')
+	T = np.linspace(t4_oh_id, t1_oh,100)
+	p = p4 * np.ones(len(T))
+	S = H2O.s(T=T,p=p)
+	plt.plot(S,T,'--g', alpha=1)
 
+	plt.title('Overheated Rankine cycle')
+	plt.xlabel('Entropy s [kJ/(kg K)]')
+	plt.ylabel('Temperature T [K]')
+	plt.legend(loc=0)
 	plt.show()
-	return real_oh_df, EnergyParams
+	return ideal_oh_df,EnergyParams_ideal, real_oh_df, EnergyParams_real
 
 print(overheated_Rankine())
 
