@@ -120,7 +120,6 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	title = 'Rankine cycle'
 	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real, title
 
-#print(Rankine_cycle())
 
 
 def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
@@ -214,7 +213,7 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	title = 'Overheated Rankine cycle'
 	return ideal_oh_df,EnergyParams_ideal, real_oh_df, EnergyParams_real, title
 
-#print(overheated_Rankine())
+
 
 
 
@@ -230,16 +229,17 @@ eta_t_re1 = 0.91
 eta_t_re2 = 0.93
 eta_p = 0.88
 
-def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1re,
-    p4re=p4re, t3re=t3re, eta_t_re1=eta_t_re1, eta_t_re2=eta_t_re2, eta_p=eta_p,
+def reheat_Rankine(fluid=fluid, p1=p1re, p2=p2re, p3=p3re, x1=x1, t1=t1re,
+    p4=p4re, t3=t3re, eta_t_re1=eta_t_re1, eta_t_re2=eta_t_re2, eta_p=eta_p,
     W_cycle=W_cycle):
 	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
-
+	p1re = p1
 	#State 1
 	h1re = fluid.h(p=p1re, T=t1re)
 	s1re = fluid.s(p=p1re, T=t1re)
 	State_1 = np.array([t1re, p1re, h1re, s1re, x1])
 	#State 2 ideal
+	p2re = p2
 	s2re_id = s1re
 	t2re_id, x2_id = fluid.T_s(s=s2re_id, p=p2re, quality=True)
 	h2re_id = fluid.h(p=p2re, T=t2re_id, x=x2_id)
@@ -250,11 +250,13 @@ def reheat_Rankine(fluid=fluid, p1re=p1re, p2re=p2re, p3re=p3re, x1=x1, t1re=t1r
 	s2re = fluid.s(T=t2re, p=p2re, x=x2)
 	State_2 = np.array([t2re, p2re, h2re, s2re, x2])
 	#State 3
+	p3re = p3
 	s3re = fluid.s(p=p3re, T=t3re)
 	h3re = fluid.h(p=p3re, T=t3re)
 	x3 = fluid.T_s(s=s3re, p=p3re, quality=True)[1]
 	State_3 = np.array([t3re, p3re, h3re, s3re, x3])
 	#State 4 ideal
+	p4re = p4
 	s4re_id = s3re
 	t4re_id, x4_id = fluid.T_s(s=s4re_id, p=p4re, quality=True)
 	h4re_id = fluid.h(p=p4re, T=t4re_id, x=x4_id)
@@ -336,7 +338,7 @@ def water_curve():
 	T = np.linspace(Tt,Tc,1000)
 	s0 = np.zeros(len(T))
 	s1 = np.zeros(len(T))
-	fig = plt.figure()
+	#fig = plt.figure()
 	for i in range(len(T)):
 	    s0[i]=H2O.s(T[i],x=0)
 	    s1[i]=H2O.s(T[i],x=1)
@@ -375,7 +377,7 @@ def plot_cycle(cycle):
 	plt.title(cycle[-1])
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
-	return plt.show()
+	
 
 #for cycle in cycles:
 #	print(plot_cycle(cycle=cycle))
@@ -395,13 +397,38 @@ eta_t_re2 = 0.93
 eta_p = 0.88
 '''
 
-p1re = np.array([10.,15.,20., 25.])
+p_range = np.array([10.,15.,20., 25.])
+T_range = np.array([400., 450., 500., 550.]) + 273.15
 
-for p in p1re:
-	cycle = reheat_Rankine(p1re=p)
-	plot_cycle(cycle)
+'''
+plt.figure()
+for i in range(len(p1re)):	
+	plt.subplot(2,2, i+1)
+	plot_cycle(reheat_Rankine(p1re=p1re[i]))
+
+plt.show()
+'''
+
+def analysis(p_range=p_range, T_range=None):
+	plt.figure()
+	cols = 2
+	if p_range:
+		rows = len(p_range)/2
+		for i in range(len(p_range)):
+			plt.subplot(rows, cols, i+1)
+			plot_cycle(reheat_Rankine(p1 = p_range[i]))
+			plt.title(str(p_range[i]))
+	else:
+		rows = len(T_range)/2
+		for i in range(len(T_range)):
+			plt.subplot(rows, cols, i+1)
+			plot_cycle(reheat_Rankine(t1 = T_range[i]))
+			plt.title(str(T_range[i]))
 
 
+	plt.show()
 
+
+print(analysis(p_range=None, T_range=T_range))
 
 
