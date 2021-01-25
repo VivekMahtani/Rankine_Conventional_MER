@@ -74,11 +74,11 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	State_4_real = np.array([t4real, p4, h4real, s4real, x4real])
 
 	data_ideal = [State_1, State_2, State_3, State_4]
-	ideal_df = pd.DataFrame(data=data_ideal, index=['State_1', 'State_2', 'State_3', 'State_4'],
+	ideal_df = pd.DataFrame(data=data_ideal, index=['State 1', 'State 2', 'State 3', 'State 4'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 
 	data_real = [State_1, State_2_real, State_3, State_4_real]
-	real_df = pd.DataFrame(data=data_real, index=['State_1', 'State_2', 'State_3', 'State_4'],
+	real_df = pd.DataFrame(data=data_real, index=['State 1', 'State 2', 'State 3', 'State 4'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 
 	#Ideal work and so on
@@ -121,6 +121,9 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 
 	title = 'Rankine cycle'
 	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real, title
+
+
+
 
 
 
@@ -172,7 +175,7 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 
 	#Ideal oh
 	data_ideal = [State_1, State_1_oh, State_2_oh_id, State_3_oh, State_4_oh_id]
-	ideal_oh_df = pd.DataFrame(data=data_ideal, index=['State_1','State_1_oh', 'State_2', 'State_3', 'State_4'],
+	ideal_oh_df = pd.DataFrame(data=data_ideal, index=['State 1','State 1 oh', 'State 2', 'State 3', 'State 4'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 
 	W_t_oh = h1_oh - h2_oh_id
@@ -193,8 +196,8 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	EnergyParams_ideal = pd.DataFrame(data=EnergyParams_ideal)
 
 
-	data = [State_1_oh, State_2_oh, State_3_oh, State_4_oh]
-	real_oh_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4'],
+	data = [State_1, State_1_oh, State_2_oh, State_3_oh, State_4_oh]
+	real_oh_df = pd.DataFrame(data=data, index=['State 1','State 1 oh', 'State 2', 'State 3', 'State 4'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 	W_t_oh = h1_oh - h2_oh
 	Q_out_oh = h2_oh - h3_oh #From the overheated state
@@ -285,7 +288,7 @@ def reheat_Rankine(fluid=fluid, p1=p1re, p2=p2re, p3=p3re, x1=x1, t1=t1re,
 	State_6 = np.array([t6re, p6re, h6re, s6re, x6])
 
 	data_id = [State_1, State_2_id, State_3, State_4_id, State_5, State_6_id]
-	reheated_id_df = pd.DataFrame(data=data_id, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
+	reheated_id_df = pd.DataFrame(data=data_id, index=['State 1', 'State 2', 'State 3', 'State 4', 'State 5', 'State 6'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 
 	W_t = (h1re - h2re_id) + (h3re - h4re_id)
@@ -377,45 +380,69 @@ def plot_cycle(cycle):
 	plt.title(cycle[-1])
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
-
-cycles = [Rankine_cycle(), overheated_Rankine(), reheat_Rankine()]
 	
-'''
+
+
+
+#Ejercicios 1 y 2
+print('Rankine cycle with and without irreversibilities')
+print('Ideal states')
+print(Rankine_cycle()[0])
+print('Real states')
+print(Rankine_cycle()[2])
+print('-------------------')
+print('Ideal work, heat, efficiency and other')
+print(Rankine_cycle()[1])
+print('Real work, heat, efficiency and other')
+print(Rankine_cycle()[3])
+#print(plot_cycle(Rankine_cycle()))
+
+
+#Ejercicio 3
+print('Overheated Rankine cycle with and without irreversibilities')
+print('Ideal states')
+print(overheated_Rankine()[0])
+print('Real states')
+print(overheated_Rankine()[2])
+print('-------------------')
+print('Ideal work, heat, efficiency and other')
+print(overheated_Rankine()[1])
+print('Real work, heat, efficiency and other')
+print(overheated_Rankine()[3])
+#print(plot_cycle(overheated_Rankine()))
+
+
+#Ejercicio 4
+print('Reheated Rankine cycle with and without irreversibilities')
+print('Ideal states')
+print(reheat_Rankine()[0])
+print('Real states')
+print(reheat_Rankine()[2])
+print('-------------------')
+print('Ideal work, heat, efficiency and other')
+print(reheat_Rankine()[1])
+print('Real work, heat, efficiency and other')
+print(reheat_Rankine()[3])
+#print(plot_cycle(reheat_Rankine()))
+
+
+
+
+#Here I can plot the cycles
+cycles = [Rankine_cycle(), overheated_Rankine(), reheat_Rankine()]
 for cycle in cycles:
 	print(plot_cycle(cycle=cycle))
+#plt.show()
 
 
-plt.show()
-'''
-
-
-'''
-p1re = 10 #MPa
-t1re = 500 +273.15 #K
-W_cycle = 200*1e03 #kW
-p2re = 0.8 #MPa
-t3re = 460 + 273.15 #K
-p3re = 0.8
-p4re = 0.008
-eta_t_re1 = 0.91
-eta_t_re2 = 0.93
-eta_p = 0.88
-'''
 
 p_range = np.array([8., 10.,12., 15.,18., 20., 22.])
 T_range = np.array([400., 450., 500., 550.]) + 273.15
 
-'''
-plt.figure()
-for i in range(len(p1re)):	
-	plt.subplot(2,2, i+1)
-	plot_cycle(reheat_Rankine(p1re=p1re[i]))
-
-plt.show()
-'''
 
 #To run this function, remember to coment the line fig = plt.figure from the water curve function
-def plot_analysis(p_range=p_range, T_range=None, W_cycle=None):
+'''
+def plot_analysis(p_range=p_range, T_range=None):
 	plt.figure()
 	cols = 2
 	if p_range is not None:
@@ -431,9 +458,8 @@ def plot_analysis(p_range=p_range, T_range=None, W_cycle=None):
 			plot_cycle(reheat_Rankine(t1 = T_range[i]))
 			plt.title(str(T_range[i]))
 
-
 	plt.show()
-
+'''
 
 eta_p_range = np.arange(0.7, 1.0, 0.05)
 
@@ -473,7 +499,7 @@ def analysis_changes(cycle, p_range, T_range=None, eta_p_range=None):
 
 
 
-print(analysis_changes(cycle=reheat_Rankine, p_range=p_range))
+#print(analysis_changes(cycle=reheat_Rankine, p_range=p_range))
 
 
 
