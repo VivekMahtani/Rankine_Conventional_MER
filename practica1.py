@@ -35,7 +35,7 @@ W_cycle = 100*1e03 #kW
 
 ##############Ideal Cycle and with irreversibilities##################
 def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
-	eta_t_real=eta_t_real, eta_p_real=eta_p_real, W_cycle=W_cycle):
+	eta_t=eta_t_real, eta_p=eta_p_real, W_cycle=W_cycle):
 
 	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
 
@@ -50,7 +50,7 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	h2 = fluid.h(p=p2, T=t2, x=x2)
 	State_2 = np.array([t2, p2, h2, s2, x2])
 	#Real State 2
-	h2real = h1 - eta_t_real*(h1-h2)
+	h2real = h1 - eta_t*(h1-h2)
 	t2real, x2real = fluid.T_h(h=h2real, p=p2, quality=True)
 	s2real = fluid.s(T=t2real, p=p2, x=x2real)
 	State_2_real = np.array([t2real, p2, h2real, s2real, x2real])
@@ -68,7 +68,7 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	h4 = fluid.h(p=p4, T=t4, x=x4)
 	State_4 = np.array([t4, p4, h4, s4, x4])
 	#Real State 4
-	h4real=h3+(h4-h3)/eta_p_real
+	h4real=h3+(h4-h3)/eta_p
 	t4real, x4real  = H2O.T_h(h=h4real,p=p4, quality=True)
 	s4real  = H2O.s(T=t4real,p=p4,x=x4real)
 	State_4_real = np.array([t4real, p4, h4real, s4real, x4real])
@@ -341,7 +341,7 @@ def water_curve():
 	T = np.linspace(Tt,Tc,1000)
 	s0 = np.zeros(len(T))
 	s1 = np.zeros(len(T))
-	fig = plt.figure()
+	#fig = plt.figure()
 	for i in range(len(T)):
 	    s0[i]=H2O.s(T[i],x=0)
 	    s1[i]=H2O.s(T[i],x=1)
@@ -363,11 +363,11 @@ def plot_cycle(cycle):
 
 	H2O = pm.get('mp.H2O')
 
-	T_id_last = np.linspace(T_id[-1], T_id[0],100)
+	T_id_last = np.linspace(T_id[-1], T_id[0],150)
 	p_id_last = p_id[-1] * np.ones(len(T_id_last))
 	S_id_last = H2O.s(T=T_id_last,p=p_id_last)
 
-	T_re_last = np.linspace(T_re[-1], T_re[0],100)
+	T_re_last = np.linspace(T_re[-1], T_re[0],150)
 	p_re_last = p_re[-1] * np.ones(len(T_re_last))
 	S_re_last = H2O.s(T=T_re_last,p=p_re_last)
 
@@ -384,6 +384,7 @@ def plot_cycle(cycle):
 
 
 
+'''
 #Ejercicios 1 y 2
 print('Rankine cycle with and without irreversibilities')
 print('Ideal states')
@@ -424,44 +425,51 @@ print(reheat_Rankine()[1])
 print('Real work, heat, efficiency and other')
 print(reheat_Rankine()[3])
 #print(plot_cycle(reheat_Rankine()))
-
+'''
 
 
 
 #Here I can plot the cycles
-cycles = [Rankine_cycle(), overheated_Rankine(), reheat_Rankine()]
-for cycle in cycles:
-	print(plot_cycle(cycle=cycle))
+# cycles = [Rankine_cycle(), overheated_Rankine(), reheat_Rankine()]
+# for cycle in cycles:
+# 	print(plot_cycle(cycle=cycle))
 #plt.show()
 
 
 
-p_range = np.array([8., 10.,12., 15.,18., 20., 22.])
+p_range = np.array([8., 10.,12., 15.,18., 20.])
 T_range = np.array([400., 450., 500., 550.]) + 273.15
+eta_p_range = np.arange(0.7, 1.05, 0.05)
 
 
 #To run this function, remember to coment the line fig = plt.figure from the water curve function
-'''
-def plot_analysis(p_range=p_range, T_range=None):
+#The len of the range has to be an even number
+def plot_analysis(cycle, p_range=p_range, T_range=None, eta_p_range=None):
 	plt.figure()
 	cols = 2
 	if p_range is not None:
 		rows = len(p_range)/2
 		for i in range(len(p_range)):
-			#plt.subplot(rows, cols, i+1)
-			plot_cycle(reheat_Rankine(p1 = p_range[i]))
-			#plt.text(3,400,'Hola')
-	else:
+			plt.subplot(rows, cols, i+1)
+			plot_cycle(cycle(p1 = p_range[i]))
+			plt.title(str(p_range[i]))
+	elif T_range is not None:
 		rows = len(T_range)/2
 		for i in range(len(T_range)):
-			#plt.subplot(rows, cols, i+1)
-			plot_cycle(reheat_Rankine(t1 = T_range[i]))
+			plt.subplot(rows, cols, i+1)
+			plot_cycle(cycle(t1 = T_range[i]))
 			plt.title(str(T_range[i]))
+	elif eta_p_range is not None:
+		rows = len(eta_p_range)/2
+		for i in range(len(eta_p_range)):
+			plt.subplot(rows, cols, i+1)
+			plot_cycle(cycle(eta_p = eta_p_range[i]))
+			plt.title(str(eta_p_range[i]))
+
 
 	plt.show()
-'''
 
-eta_p_range = np.arange(0.7, 1.0, 0.05)
+plot_analysis(cycle=Rankine_cycle, p_range=None, eta_p_range=eta_p_range)
 
 
 #This function compares the main values of the cycles by changing one of the parameters.
