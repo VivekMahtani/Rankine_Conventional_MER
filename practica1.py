@@ -2,6 +2,7 @@ import pyromat as pm
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 '''
 I know it is still a little bit crappy, because I didn't use classes, but I hope you like the code :D
@@ -95,9 +96,9 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	Q_in *= mass_flux/1000 #[MW]
 	Q_out *= mass_flux/1000 #[MW]
 
-	EnergyParams_ideal = [W_t, Q_out, W_p, Q_in, bwr, eta, mass_flux]
-	EnergyParams_ideal = pd.DataFrame(data=EnergyParams_ideal, index=['W_t [MW]', 'Q_out [MW]', 
-		'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+	EnergyParams_ideal = {'W_t [MW]': W_t, 'Q_out [MW]':Q_out, 'W_p [MW]': W_p, 'Q_in [MW]': Q_in, 'bwr [%]': bwr,
+					'eta [%]': eta, 'mass_flux [kg/s]': mass_flux}
+	EnergyParams_ideal = pd.DataFrame(data=EnergyParams_ideal)
 
 	# Real works and so on
 	W_t_real = h1 - h2real #Work done by the turbine
@@ -113,9 +114,10 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	Q_in_real *= mass_flux_real/1000 #[MW]
 	Q_out_real *= mass_flux_real/1000 #[MW]
 
-	EnergyParams_real = [W_t_real, Q_out_real, W_p_real, Q_in_real, bwr_real, eta_real, mass_flux_real]
-	EnergyParams_real = pd.DataFrame(data=EnergyParams_real, index=['W_t [MW]', 'Q_out [MW]', 
-		'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+
+	EnergyParams_real = {'W_t [MW]':W_t_real,'Q_out [MW]': Q_out_real,'W_p [MW]': W_p_real,'Q_in [MW]': Q_in_real,'bwr [%]': bwr_real,
+						 'eta [%]':eta_real,'mass_flux [kg/s]': mass_flux_real}
+	EnergyParams_real = pd.DataFrame(data=EnergyParams_real)
 
 	title = 'Rankine cycle'
 	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real, title
@@ -123,7 +125,7 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 
 
 def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
-    t1_oh=723.15, eta_t_real=eta_t_real, eta_p_real=eta_p_real,
+    t1_oh=723.15, eta_t=eta_t_real, eta_p=eta_p_real,
     W_cycle=W_cycle):
 	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
 	#State 1:
@@ -142,7 +144,7 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	h2_oh_id = fluid.h(p=p2, T=t2_oh_id, x=x2_oh_id)
 	State_2_oh_id = np.array([t2_oh_id, p2, h2_oh_id, s2_oh_id, x2_oh_id])
 	#Overheated state 2 (real)
-	h2_oh = h1_oh - eta_t_real*(h1_oh-h2_oh_id)
+	h2_oh = h1_oh - eta_t*(h1_oh-h2_oh_id)
 	t2_oh, x2_oh = fluid.T_h(h=h2_oh, p=p2, quality=True)
 	s2_oh = fluid.s(T=t2_oh, p=p2, x=x2_oh)
 	W_r_oh = h2_oh - h1_oh
@@ -163,7 +165,7 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	State_4_oh_id = np.array([t4_oh_id, p4, h4_oh_id, s4_oh_id, x4_oh_id])
 
 	#Real State 4
-	h4_oh=h3_oh+(h4_oh_id-h3_oh)/eta_p_real
+	h4_oh=h3_oh+(h4_oh_id-h3_oh)/eta_p
 	t4_oh, x4_oh  = H2O.T_h(h=h4_oh,p=p4, quality=True)
 	s4_oh  = H2O.s(T=t4_oh,p=p4,x=x4_oh)
 	State_4_oh = np.array([t4_oh, p4, h4_oh, s4_oh, x4_oh])
@@ -186,9 +188,9 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	W_p_oh *= mass_flux/1000 #[MW]
 	Q_in_oh *= mass_flux/1000 #[MW]
 	Q_out_oh *= mass_flux/1000 #[MW]
-	EnergyParams_ideal = [W_t_oh, Q_out_oh, W_p_oh, Q_in_oh, bwr, eta_oh, mass_flux]
-	EnergyParams_ideal = pd.DataFrame(data=EnergyParams_ideal, index=['W_t [MW]', 'Q_out [MW]', 
-		'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+	EnergyParams_ideal = {'W_t [MW]':W_t_oh, 'Q_out [MW]':Q_out_oh,'W_p [MW]': W_p_oh,'Q_in [MW]': Q_in_oh,
+						'bwr [%]': bwr,'eta [%]': eta_oh,'mass_flux [kg/s]': mass_flux}
+	EnergyParams_ideal = pd.DataFrame(data=EnergyParams_ideal)
 
 
 	data = [State_1_oh, State_2_oh, State_3_oh, State_4_oh]
@@ -207,15 +209,12 @@ def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	W_p_oh *= mass_flux/1000 #[MW]
 	Q_in_oh *= mass_flux/1000 #[MW]
 	Q_out_oh *= mass_flux/1000 #[MW]
-	EnergyParams_real = [W_t_oh, Q_out_oh, W_p_oh, Q_in_oh, bwr, eta_oh, mass_flux]
-	EnergyParams_real = pd.DataFrame(data=EnergyParams_real, index=['W_t [MW]', 'Q_out [MW]', 
-		'W_p [MW]', 'Q_in [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+
+	EnergyParams_real = {'W_t [MW]':W_t_oh, 'Q_out [MW]':Q_out_oh,'W_p [MW]': W_p_oh,'Q_in [MW]': Q_in_oh,
+						'bwr [%]': bwr,'eta [%]': eta_oh,'mass_flux [kg/s]': mass_flux}
+	EnergyParams_real = pd.DataFrame(data=EnergyParams_real)
 	title = 'Overheated Rankine cycle'
 	return ideal_oh_df,EnergyParams_ideal, real_oh_df, EnergyParams_real, title
-
-
-
-
 
 
 p1re = 10 #MPa
@@ -300,7 +299,8 @@ def reheat_Rankine(fluid=fluid, p1=p1re, p2=p2re, p3=p3re, x1=x1, t1=t1re,
 	W_p *= mass_flux/1000 #[MW]
 	Q_cald *= mass_flux/1000 #[MW]
 	Q_cond *= mass_flux/1000 #[MW]
-	EnergyParams_id = [W_t, Q_cald, W_p, Q_cond, bwr, eta, mass_flux]
+	EnergyParams_id = {'W_t [MW]': W_t, 'Q_cald [MW]':Q_cald, 'W_p [MW]': W_p, 'Q_cond [MW]': Q_cond, 'bwr [%]': bwr,
+					'eta [%]': eta, 'mass_flux [kg/s]': mass_flux}
 	EnergyParams_id = pd.DataFrame(data=EnergyParams_id, index=['W_t [MW]', 
 		'Q_cald [MW]', 'W_p [MW]', 'Q_cond [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
 
@@ -320,9 +320,9 @@ def reheat_Rankine(fluid=fluid, p1=p1re, p2=p2re, p3=p3re, x1=x1, t1=t1re,
 	W_p *= mass_flux/1000 #[MW]
 	Q_cald *= mass_flux/1000 #[MW]
 	Q_cond *= mass_flux/1000 #[MW]
-	EnergyParams = [W_t, Q_cald, W_p, Q_cond, bwr, eta, mass_flux]
-	EnergyParams = pd.DataFrame(data=EnergyParams, index=['W_t [MW]', 
-		'Q_cald [MW]', 'W_p [MW]', 'Q_cond [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+	EnergyParams = {'W_t [MW]': W_t, 'Q_cald [MW]':Q_cald, 'W_p [MW]': W_p, 'Q_cond [MW]': Q_cond, 'bwr [%]': bwr,
+					'eta [%]': eta, 'mass_flux [kg/s]': mass_flux}
+	EnergyParams = pd.DataFrame(data=EnergyParams)
 	title = 'Reheated Rankine cycle'
 
 	return reheated_id_df, EnergyParams_id, reheated_df, EnergyParams, title
@@ -338,13 +338,13 @@ def water_curve():
 	T = np.linspace(Tt,Tc,1000)
 	s0 = np.zeros(len(T))
 	s1 = np.zeros(len(T))
-	#fig = plt.figure()
+	fig = plt.figure()
 	for i in range(len(T)):
 	    s0[i]=H2O.s(T[i],x=0)
 	    s1[i]=H2O.s(T[i],x=1)
 	return plt.plot(s0,T,'cyan',s1,T,'red',ls='--')
 
-cycles = [Rankine_cycle(), overheated_Rankine(), reheat_Rankine()]
+
 
 def plot_cycle(cycle):
 
@@ -377,11 +377,16 @@ def plot_cycle(cycle):
 	plt.title(cycle[-1])
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
+
+cycles = [Rankine_cycle(), overheated_Rankine(), reheat_Rankine()]
 	
+'''
+for cycle in cycles:
+	print(plot_cycle(cycle=cycle))
 
-#for cycle in cycles:
-#	print(plot_cycle(cycle=cycle))
 
+plt.show()
+'''
 
 
 '''
@@ -397,7 +402,7 @@ eta_t_re2 = 0.93
 eta_p = 0.88
 '''
 
-p_range = np.array([10.,15.,20., 25.])
+p_range = np.array([8., 10.,12., 15.,18., 20., 22.])
 T_range = np.array([400., 450., 500., 550.]) + 273.15
 
 '''
@@ -409,19 +414,20 @@ for i in range(len(p1re)):
 plt.show()
 '''
 
-def analysis(p_range=p_range, T_range=None):
+#To run this function, remember to coment the line fig = plt.figure from the water curve function
+def plot_analysis(p_range=p_range, T_range=None, W_cycle=None):
 	plt.figure()
 	cols = 2
-	if p_range:
+	if p_range is not None:
 		rows = len(p_range)/2
 		for i in range(len(p_range)):
-			plt.subplot(rows, cols, i+1)
+			#plt.subplot(rows, cols, i+1)
 			plot_cycle(reheat_Rankine(p1 = p_range[i]))
-			plt.title(str(p_range[i]))
+			#plt.text(3,400,'Hola')
 	else:
 		rows = len(T_range)/2
 		for i in range(len(T_range)):
-			plt.subplot(rows, cols, i+1)
+			#plt.subplot(rows, cols, i+1)
 			plot_cycle(reheat_Rankine(t1 = T_range[i]))
 			plt.title(str(T_range[i]))
 
@@ -429,6 +435,61 @@ def analysis(p_range=p_range, T_range=None):
 	plt.show()
 
 
-print(analysis(p_range=None, T_range=T_range))
+eta_p_range = np.arange(0.7, 1.0, 0.05)
+
+
+#This function compares the main values of the cycles by changing one of the parameters.
+
+def analysis_changes(cycle, p_range, T_range=None, eta_p_range=None):
+	efficiencies = []
+	bwr = []
+	mass_flux = []
+	if p_range is not None:
+		for p in p_range:
+			data = cycle(p1=p)[3]
+			efficiencies.append(data['eta [%]'][0])
+			bwr.append(data['bwr [%]'][0])
+			mass_flux.append(data['mass_flux [kg/s]'][0])
+		data = {'P [MPa]': p_range, 'efficiency [%]': efficiencies, 'bwr [%]': bwr, 'mass_flux [kg/s]': mass_flux}
+		df = pd.DataFrame(data=data)
+	elif T_range is not None:
+		for t in T_range:
+			data = cycle(t1=t)[3]
+			efficiencies.append(data['eta [%]'][0])
+			bwr.append(data['bwr [%]'][0])
+			mass_flux.append(data['mass_flux [kg/s]'][0])
+		data = {'T [K]': T_range, 'efficiency [%]': efficiencies, 'bwr [%]': bwr, 'mass_flux [kg/s]': mass_flux}
+		df = pd.DataFrame(data=data)
+	else:
+		for eta in eta_p_range:
+			data = cycle(eta_p=eta)[3]
+			efficiencies.append(data['eta [%]'][0])
+			bwr.append(data['bwr [%]'][0])
+			mass_flux.append(data['mass_flux [kg/s]'][0])
+		data = {'eta_p [p.u]': eta_p_range, 'efficiency [%]': efficiencies, 'bwr [%]': bwr, 'mass_flux [kg/s]': mass_flux}
+		df = pd.DataFrame(data=data)
+	return df
+
+
+
+
+print(analysis_changes(cycle=reheat_Rankine, p_range=p_range))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
