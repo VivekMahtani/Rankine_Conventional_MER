@@ -309,7 +309,7 @@ def reheat_Rankine(fluid=fluid, p1=p1re, p2=p2re, p3=p3re, x1=x1, t1=t1re,
 
 
 	data = [State_1, State_2, State_3, State_4, State_5, State_6]
-	reheated_df = pd.DataFrame(data=data, index=['State_1', 'State_2', 'State_3', 'State_4', 'State_5', 'State_6'],
+	reheated_df = pd.DataFrame(data=data, index=['State 1', 'State 2', 'State 3', 'State 4', 'State 5', 'State 6'],
 		columns=['T [K]','P [MPa]', 'h [kJ/kg]', 's [kJ/(kg K)]','x [p.u]'])
 
 	W_t = (h1re - h2re) + (h3re - h4re)
@@ -360,8 +360,8 @@ def water_curve():
 
 def plot_cycle(cycle):
 
-	id_df = cycle[0]
-	re_df = cycle[2]
+	id_df = cycle()[0]
+	re_df = cycle()[2]
 	index = id_df.columns.values
 	T_id = id_df[index[0]]
 	s_id = id_df[index[3]]
@@ -386,12 +386,14 @@ def plot_cycle(cycle):
 	plt.plot(S_re_last,T_re_last,'-k')
 	plt.plot(s_re, T_re, '-ok', label='Real')
 	plt.legend()
-	plt.title(cycle[-1])
+	plt.title(cycle()[-1])
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
 
 
 
+plot_cycle(cycle=reheat_Rankine)
+plt.show()
 
 	
 
@@ -445,7 +447,7 @@ print(reheat_Rankine()[3])
 
 
 #Here I can plot the cycles
-# cycles = [Rankine_cycle(), overheated_Rankine(), reheat_Rankine()]
+# cycles = [Rankine_cycle, overheated_Rankine, reheat_Rankine]
 # for cycle in cycles:
 # 	print(plot_cycle(cycle=cycle))
 #plt.show()
@@ -453,9 +455,9 @@ print(reheat_Rankine()[3])
 
 
 #Saving all the excels
-cycles = [Rankine_cycle, overheated_Rankine, reheat_Rankine]
-for cycle in cycles:
-	Saving_data(cycle=cycle)
+#cycles = [Rankine_cycle, overheated_Rankine, reheat_Rankine]
+#for cycle in cycles:
+#	Saving_data(cycle=cycle)
 
 
 
