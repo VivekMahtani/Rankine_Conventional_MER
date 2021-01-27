@@ -469,7 +469,8 @@ eta_p_range = np.arange(0.7, 1.05, 0.05)
 
 #To run this function, remember to coment the line fig = plt.figure from the water curve function
 #The len of the range has to be an even number
-def plot_analysis(cycle, p_range=p_range, eta_p_range=None):
+#eta_t_range is not valid for the reheated cycle.
+def plot_analysis(cycle, p_range=p_range, eta_p_range=None, eta_t_range=None):
 	plt.figure()
 	cols = 2
 	if p_range is not None:
@@ -486,6 +487,13 @@ def plot_analysis(cycle, p_range=p_range, eta_p_range=None):
 			plot_cycle(cycle(eta_p = eta_p_range[i]))
 			plt.title(str(eta_p_range[i]))
 
+	elif eta_t_range is not None:
+		rows = len(eta_t_range)/2
+		for i in range(len(eta_t_range)):
+			plt.subplot(rows, cols, i+1)
+			plot_cycle(cycle(eta_t = eta_t_range[i]))
+			plt.title(str(eta_t_range[i]))
+
 
 	plt.show()
 
@@ -494,7 +502,7 @@ def plot_analysis(cycle, p_range=p_range, eta_p_range=None):
 
 #This function compares the main values of the cycles by changing one of the parameters.
 
-def analysis_changes(cycle, p_range, eta_p_range=None):
+def analysis_changes(cycle, p_range, eta_p_range=None, eta_t_range=None):
 	efficiencies = []
 	bwr = []
 	mass_flux = []
@@ -506,7 +514,14 @@ def analysis_changes(cycle, p_range, eta_p_range=None):
 			mass_flux.append(data['mass_flux [kg/s]'][0])
 		data = {'P [MPa]': p_range, 'efficiency [%]': efficiencies, 'bwr [%]': bwr, 'mass_flux [kg/s]': mass_flux}
 		df = pd.DataFrame(data=data)
-
+	elif eta_t_range is not None:
+		for eta in eta_t_range:
+			data = cycle(eta_t=eta)[3]
+			efficiencies.append(data['eta [%]'][0])
+			bwr.append(data['bwr [%]'][0])
+			mass_flux.append(data['mass_flux [kg/s]'][0])
+		data = {'eta_t [p.u]': eta_t_range, 'efficiency [%]': efficiencies, 'bwr [%]': bwr, 'mass_flux [kg/s]': mass_flux}
+		df = pd.DataFrame(data=data)
 	else:
 		for eta in eta_p_range:
 			data = cycle(eta_p=eta)[3]
