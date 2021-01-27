@@ -122,8 +122,9 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 	title = 'Rankine cycle'
 	return ideal_df, EnergyParams_ideal, real_df, EnergyParams_real, title
 
-
-
+#Saving the data:
+#new_csv = Rankine_cycle()[0].merge((Rankine_cycle()[1], Rankine_cycle()[2], Rankine_cycle()[3]))
+#print(new_csv)
 
 
 
@@ -304,8 +305,7 @@ def reheat_Rankine(fluid=fluid, p1=p1re, p2=p2re, p3=p3re, x1=x1, t1=t1re,
 	Q_cond *= mass_flux/1000 #[MW]
 	EnergyParams_id = {'W_t [MW]': W_t, 'Q_cald [MW]':Q_cald, 'W_p [MW]': W_p, 'Q_cond [MW]': Q_cond, 'bwr [%]': bwr,
 					'eta [%]': eta, 'mass_flux [kg/s]': mass_flux}
-	EnergyParams_id = pd.DataFrame(data=EnergyParams_id, index=['W_t [MW]', 
-		'Q_cald [MW]', 'W_p [MW]', 'Q_cond [MW]','bwr [%]', 'eta [%]', 'mass_flux [kg/s]'])
+	EnergyParams_id = pd.DataFrame(data=EnergyParams_id)
 
 
 	data = [State_1, State_2, State_3, State_4, State_5, State_6]
@@ -329,6 +329,15 @@ def reheat_Rankine(fluid=fluid, p1=p1re, p2=p2re, p3=p3re, x1=x1, t1=t1re,
 	title = 'Reheated Rankine cycle'
 
 	return reheated_id_df, EnergyParams_id, reheated_df, EnergyParams, title
+
+
+def Saving_data(cycle):
+	name = cycle()[4] + '.xlsx'
+	with pd.ExcelWriter(name) as writer:  
+		cycle()[0].to_excel(writer, sheet_name='Ideal States')
+		cycle()[1].to_excel(writer, sheet_name='Ideal parameters')
+		cycle()[2].to_excel(writer, sheet_name='Real States')
+		cycle()[3].to_excel(writer, sheet_name='Real parameters')
 
 
 def water_curve():
@@ -380,11 +389,17 @@ def plot_cycle(cycle):
 	plt.title(cycle[-1])
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
+
+
+
+
 	
 
 
 
 '''
+Para imprimir los resultados por pantalla, descomentar esto.
+
 #Ejercicios 1 y 2
 print('Rankine cycle with and without irreversibilities')
 print('Ideal states')
@@ -437,6 +452,16 @@ print(reheat_Rankine()[3])
 
 
 
+#Saving all the excels
+cycles = [Rankine_cycle, overheated_Rankine, reheat_Rankine]
+for cycle in cycles:
+	Saving_data(cycle=cycle)
+
+
+
+
+
+
 p_range = np.array([8., 10.,12., 15.,18., 20.])
 T_range = np.array([400., 450., 500., 550.]) + 273.15
 eta_p_range = np.arange(0.7, 1.05, 0.05)
@@ -469,7 +494,7 @@ def plot_analysis(cycle, p_range=p_range, T_range=None, eta_p_range=None):
 
 	plt.show()
 
-plot_analysis(cycle=Rankine_cycle, p_range=None, eta_p_range=eta_p_range)
+#plot_analysis(cycle=Rankine_cycle, p_range=None, eta_p_range=eta_p_range)
 
 
 #This function compares the main values of the cycles by changing one of the parameters.
