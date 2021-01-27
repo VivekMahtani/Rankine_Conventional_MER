@@ -2,7 +2,7 @@ import pyromat as pm
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
+#import seaborn as sns
 
 '''
 I know it is still a little bit crappy, because I didn't use classes, but I hope you like the code :D
