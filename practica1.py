@@ -16,6 +16,8 @@ ideal and with the irreversibilities (it is also a little bit crappy, but it wor
 
 For the titles of the graphic representation the most unefficient thing occured to me, but again, it works. I added the
 title of the cycle to the returning parameters of each function.
+
+Also, i know that x=-1 only exists for PyroMat, but in the created excels, there is this issue.
 '''
 
 plt.style.use('seaborn')
@@ -27,7 +29,6 @@ p2 = 0.008 #MPa
 x1 = 1.
 x3 = 0.
 
-t1_oh = 723.15 #oh is for overheated
 eta_t_real = 0.85 #performance, or efficiency of the turbine
 eta_p_real = 0.85 #Same for the pump
 W_cycle = 100*1e03 #kW
@@ -127,9 +128,9 @@ def Rankine_cycle(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3,
 #print(new_csv)
 
 
-
+t1_oh = 723.15
 def overheated_Rankine(fluid=fluid, p1=p1, p2=p2, x1=x1, x3=x3, 
-    t1_oh=723.15, eta_t=eta_t_real, eta_p=eta_p_real,
+    t1_oh=t1_oh, eta_t=eta_t_real, eta_p=eta_p_real,
     W_cycle=W_cycle):
 	pm.config['unit_pressure'] = 'MPa' #Actually, it is possible to change units.
 	#State 1:
@@ -333,7 +334,7 @@ def reheat_Rankine(fluid=fluid, p1=p1re, p2=p2re, p3=p3re, x1=x1, t1=t1re,
 
 def Saving_data(cycle):
 	name = cycle()[4] + '.xlsx'
-	with pd.ExcelWriter(name) as writer:  
+	with pd.ExcelWriter(name) as writer:
 		cycle()[0].to_excel(writer, sheet_name='Ideal States')
 		cycle()[1].to_excel(writer, sheet_name='Ideal parameters')
 		cycle()[2].to_excel(writer, sheet_name='Real States')
@@ -389,18 +390,16 @@ def plot_cycle(cycle):
 	plt.title(cycle()[-1])
 	plt.xlabel('Entropy s [kJ/(kg K)]')
 	plt.ylabel('Temperature T [K]')
+	return plt.show()
 
 
-
-plot_cycle(cycle=reheat_Rankine)
-plt.show()
 
 	
 
 
 
 '''
-Para imprimir los resultados por pantalla, descomentar esto.
+To see the results in the screen, uncomment these following lines
 
 #Ejercicios 1 y 2
 print('Rankine cycle with and without irreversibilities')
@@ -468,10 +467,9 @@ p_range = np.array([8., 10.,12., 15.,18., 20.])
 T_range = np.array([400., 450., 500., 550.]) + 273.15
 eta_p_range = np.arange(0.7, 1.05, 0.05)
 
-
 #To run this function, remember to coment the line fig = plt.figure from the water curve function
 #The len of the range has to be an even number
-def plot_analysis(cycle, p_range=p_range, T_range=None, eta_p_range=None):
+def plot_analysis(cycle, p_range=p_range, eta_p_range=None):
 	plt.figure()
 	cols = 2
 	if p_range is not None:
@@ -480,12 +478,7 @@ def plot_analysis(cycle, p_range=p_range, T_range=None, eta_p_range=None):
 			plt.subplot(rows, cols, i+1)
 			plot_cycle(cycle(p1 = p_range[i]))
 			plt.title(str(p_range[i]))
-	elif T_range is not None:
-		rows = len(T_range)/2
-		for i in range(len(T_range)):
-			plt.subplot(rows, cols, i+1)
-			plot_cycle(cycle(t1 = T_range[i]))
-			plt.title(str(T_range[i]))
+
 	elif eta_p_range is not None:
 		rows = len(eta_p_range)/2
 		for i in range(len(eta_p_range)):
@@ -501,7 +494,7 @@ def plot_analysis(cycle, p_range=p_range, T_range=None, eta_p_range=None):
 
 #This function compares the main values of the cycles by changing one of the parameters.
 
-def analysis_changes(cycle, p_range, T_range=None, eta_p_range=None):
+def analysis_changes(cycle, p_range, eta_p_range=None):
 	efficiencies = []
 	bwr = []
 	mass_flux = []
@@ -513,14 +506,7 @@ def analysis_changes(cycle, p_range, T_range=None, eta_p_range=None):
 			mass_flux.append(data['mass_flux [kg/s]'][0])
 		data = {'P [MPa]': p_range, 'efficiency [%]': efficiencies, 'bwr [%]': bwr, 'mass_flux [kg/s]': mass_flux}
 		df = pd.DataFrame(data=data)
-	elif T_range is not None:
-		for t in T_range:
-			data = cycle(t1=t)[3]
-			efficiencies.append(data['eta [%]'][0])
-			bwr.append(data['bwr [%]'][0])
-			mass_flux.append(data['mass_flux [kg/s]'][0])
-		data = {'T [K]': T_range, 'efficiency [%]': efficiencies, 'bwr [%]': bwr, 'mass_flux [kg/s]': mass_flux}
-		df = pd.DataFrame(data=data)
+
 	else:
 		for eta in eta_p_range:
 			data = cycle(eta_p=eta)[3]
